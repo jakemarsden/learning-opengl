@@ -4,6 +4,7 @@ import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.GL_NONE;
 import static org.lwjgl.opengl.GL20.*;
 
+import jakemarsden.opengl.engine.math.Matrix4;
 import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -23,6 +24,10 @@ public final class ShaderProgram {
 
   public void setUniformInt(@NonNull String name, int value) {
     glUniform1i(this.findUniform(name), value);
+  }
+
+  public void setUniformMat4(@NonNull String name, @NonNull Matrix4 value) {
+    glUniformMatrix4fv(this.findUniform(name), true, value.toArray());
   }
 
   /** @param value one of {@code GL_TEXTURE0}, {@code GL_TEXTURE1}, {@code GL_TEXTURE2}... */

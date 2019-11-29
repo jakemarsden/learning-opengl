@@ -5,7 +5,10 @@ layout (location = 1) in vec2 texCoord;
 
 out vec2 TexCoord;
 
+uniform mat4 cameraTransform;
+uniform mat4 modelTransform;
+
 void main() {
-  gl_Position = vec4(position, 1.0);
+  gl_Position = cameraTransform * modelTransform * vec4(position, 1.0);
   TexCoord = texCoord;
 }

@@ -1,11 +1,15 @@
 package jakemarsden.opengl;
 
+import static jakemarsden.opengl.engine.math.Math.PI;
 import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 
 import jakemarsden.opengl.engine.Game;
+import jakemarsden.opengl.engine.camera.PerspectiveCamera;
 import jakemarsden.opengl.engine.display.Display;
+import jakemarsden.opengl.engine.math.Matrix4;
+import jakemarsden.opengl.engine.math.Vector3;
 import jakemarsden.opengl.engine.mesh.StaticMesh;
 import jakemarsden.opengl.engine.tex.Texture;
 import java.io.IOException;
@@ -20,13 +24,24 @@ final class MainGame implements Game {
 
   private final Display display;
 
+  private final PerspectiveCamera camera;
   private final MainShader shader;
   private final StaticMesh quadMesh;
   private final Texture quadTex;
 
+  private Vector3 quadPos = Vector3.zero();
+  private Vector3 quadRot = Vector3.of(-0.3f * PI, 0, 0);
+  private Vector3 quadScale = Vector3.one();
+
   MainGame(@NonNull Display display) {
     LOGGER.info().log("#<init>");
     this.display = display;
+
+    this.camera =
+        new PerspectiveCamera(
+            Vector3.of(0, 0, 3),
+            Vector3.of(0, 0, -1),
+            display.getWidth() / (float) display.getHeight());
 
     GL.createCapabilities();
     glEnable(GL_DEPTH_TEST);
@@ -59,7 +74,11 @@ final class MainGame implements Game {
     }
 
     glViewport(0, 0, this.display.getWidth(), this.display.getHeight());
-    this.display.setResizeCallback((newWidth, newHeight) -> glViewport(0, 0, newWidth, newHeight));
+    this.display.setResizeCallback(
+        (newWidth, newHeight) -> {
+          glViewport(0, 0, newWidth, newHeight);
+          this.camera.setAspectRatio(newWidth / (float) newHeight);
+        });
     this.display.setVisible(true);
   }
 
@@ -92,6 +111,8 @@ final class MainGame implements Game {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     this.shader.start();
+    this.shader.setCameraTransform(this.camera.calculatePvTransform());
+    this.shader.setModelTransform(Matrix4.transform(quadPos, quadRot, quadScale));
     this.shader.setTexture(this.quadTex);
     this.quadTex.bind();
 
