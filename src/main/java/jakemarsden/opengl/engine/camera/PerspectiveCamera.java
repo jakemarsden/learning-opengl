@@ -40,9 +40,8 @@ public final class PerspectiveCamera extends BaseCamera {
   }
 
   public void setNearZ(float nearZ) {
-    if (nearZ == this.nearZ) return;
-    this.dirtyProjection();
     this.nearZ = nearZ;
+    this.dirtyProjection();
   }
 
   public float getFarZ() {
@@ -50,9 +49,8 @@ public final class PerspectiveCamera extends BaseCamera {
   }
 
   public void setFarZ(float farZ) {
-    if (farZ == this.farZ) return;
-    this.dirtyProjection();
     this.farZ = farZ;
+    this.dirtyProjection();
   }
 
   public @radians float getFovY() {
@@ -60,9 +58,8 @@ public final class PerspectiveCamera extends BaseCamera {
   }
 
   public void setFovY(@radians float fovY) {
-    if (fovY == this.fovY) return;
-    this.dirtyProjection();
     this.fovY = fovY;
+    this.dirtyProjection();
   }
 
   public float getAspectRatio() {
@@ -70,13 +67,13 @@ public final class PerspectiveCamera extends BaseCamera {
   }
 
   public void setAspectRatio(float ar) {
-    if (ar == this.ar) return;
-    this.dirtyProjection();
     this.ar = ar;
+    this.dirtyProjection();
   }
 
   @Override
-  protected @NonNull Matrix4 calculateProjection() {
+  @NonNull
+  Matrix4 calculateProjection() {
     return Projection.perspective(this.fovY, this.ar, this.nearZ, this.farZ);
   }
 }

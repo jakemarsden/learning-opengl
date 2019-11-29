@@ -37,16 +37,17 @@ final class MainGame implements Game {
     LOGGER.info().log("#<init>");
     this.display = display;
 
+    GL.createCapabilities();
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glClearColor(0.4f, 0.4f, 0.5f, 1);
+
     this.camera =
         new PerspectiveCamera(
             Vector3.of(0, 0, 3),
             Vector3.of(0, 0, -1),
             display.getWidth() / (float) display.getHeight());
-
-    GL.createCapabilities();
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glClearColor(0.4f, 0.4f, 0.5f, 1);
+    this.shader = new MainShader();
 
     final short[] quadIndices = {
       0, 1, 3,
@@ -64,7 +65,6 @@ final class MainGame implements Game {
       0.0f, 1.0f,
       0.0f, 0.0f
     };
-    this.shader = new MainShader();
     this.quadMesh = StaticMesh.triangles(quadIndices, quadVertices, quadTexCoords);
 
     try {

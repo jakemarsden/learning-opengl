@@ -42,9 +42,8 @@ public final class OrthographicCamera extends BaseCamera {
   }
 
   public void setLeft(float left) {
-    if (left == this.left) return;
-    this.dirtyProjection();
     this.left = left;
+    this.dirtyProjection();
   }
 
   public float getRight() {
@@ -52,9 +51,8 @@ public final class OrthographicCamera extends BaseCamera {
   }
 
   public void setRight(float right) {
-    if (right == this.right) return;
-    this.dirtyProjection();
     this.right = right;
+    this.dirtyProjection();
   }
 
   public float getBottom() {
@@ -62,9 +60,8 @@ public final class OrthographicCamera extends BaseCamera {
   }
 
   public void setBottom(float bottom) {
-    if (bottom == this.bottom) return;
-    this.calculateProjection();
     this.bottom = bottom;
+    this.dirtyProjection();
   }
 
   public float getTop() {
@@ -72,9 +69,8 @@ public final class OrthographicCamera extends BaseCamera {
   }
 
   public void setTop(float top) {
-    if (top == this.top) return;
-    this.calculateProjection();
     this.top = top;
+    this.dirtyProjection();
   }
 
   public float getNear() {
@@ -82,9 +78,8 @@ public final class OrthographicCamera extends BaseCamera {
   }
 
   public void setNear(float near) {
-    if (near == this.near) return;
-    this.calculateProjection();
     this.near = near;
+    this.dirtyProjection();
   }
 
   public float getFar() {
@@ -92,13 +87,13 @@ public final class OrthographicCamera extends BaseCamera {
   }
 
   public void setFar(float far) {
-    if (far == this.far) return;
-    this.calculateProjection();
     this.far = far;
+    this.dirtyProjection();
   }
 
   @Override
-  protected @NonNull Matrix4 calculateProjection() {
+  @NonNull
+  Matrix4 calculateProjection() {
     return Projection.orthographic(
         this.left, this.right, this.bottom, this.top, this.near, this.far);
   }

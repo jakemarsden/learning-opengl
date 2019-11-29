@@ -6,7 +6,7 @@ import jakemarsden.opengl.engine.math.Vector3;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public abstract class BaseCamera implements Camera {
+abstract class BaseCamera implements Camera {
 
   private static final Vector3 UP = Vector3.of(0, 1, 0);
 
@@ -17,7 +17,7 @@ public abstract class BaseCamera implements Camera {
   private @Nullable Matrix4 view = null;
   private @Nullable Matrix4 pv = null;
 
-  protected BaseCamera(Vector3 pos, Vector3 dir) {
+  BaseCamera(Vector3 pos, Vector3 dir) {
     this.pos = pos;
     this.dir = dir;
   }
@@ -29,9 +29,8 @@ public abstract class BaseCamera implements Camera {
 
   @Override
   public final void setPosition(@NonNull Vector3 pos) {
-    if (pos.equals(this.pos)) return;
-    this.dirtyView();
     this.pos = pos;
+    this.dirtyView();
   }
 
   @Override
@@ -41,9 +40,8 @@ public abstract class BaseCamera implements Camera {
 
   @Override
   public final void setDirection(@NonNull Vector3 dir) {
-    if (dir.equals(this.dir)) return;
-    this.dirtyView();
     this.dir = dir;
+    this.dirtyView();
   }
 
   @Override
@@ -60,18 +58,19 @@ public abstract class BaseCamera implements Camera {
     return this.pv;
   }
 
-  protected abstract @NonNull Matrix4 calculateProjection();
+  abstract @NonNull Matrix4 calculateProjection();
 
-  protected @NonNull Matrix4 calculateView() {
+  @NonNull
+  Matrix4 calculateView() {
     return Projection.lookAt(this.pos, this.pos.plus(this.dir), UP);
   }
 
-  protected final void dirtyProjection() {
+  final void dirtyProjection() {
     this.projection = null;
     this.pv = null;
   }
 
-  protected final void dirtyView() {
+  final void dirtyView() {
     this.view = null;
     this.pv = null;
   }

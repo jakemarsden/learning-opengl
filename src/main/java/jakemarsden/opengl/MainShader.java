@@ -36,6 +36,7 @@ final class MainShader implements Shader {
     this.prog.setUniformMat4(UNIFORM_MODEL_TRANSFORM, model);
   }
 
+  @Override
   public void setTexture(@NonNull Texture tex) {
     this.prog.setUniformTexture(UNIFORM_TEXTURE, tex.getUnit());
   }
