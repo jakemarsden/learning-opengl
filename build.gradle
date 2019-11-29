@@ -52,7 +52,8 @@ test {
 
 checkerFramework {
   checkers = [
-    'org.checkerframework.checker.nullness.NullnessChecker'
+    'org.checkerframework.checker.nullness.NullnessChecker',
+    'org.checkerframework.checker.units.UnitsChecker'
   ]
 }
 

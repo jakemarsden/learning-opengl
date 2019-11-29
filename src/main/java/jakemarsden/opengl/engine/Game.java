@@ -1,22 +1,16 @@
 package jakemarsden.opengl.engine;
 
-import jakemarsden.opengl.engine.display.Display;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.units.qual.s;
 
 public interface Game {
-
-  @NonNull
-  Display getDisplay();
-
-  void init();
-
-  void destroy();
 
   boolean shouldContinue();
 
   void processInput();
 
-  void update(long deltaTime);
+  void update(@s double deltaTime);
 
   void render();
+
+  void destroy();
 }

@@ -27,6 +27,7 @@ public class Application implements Runnable {
     final var display = GlfwDisplay.create(1024, 768, "Learning OpenGL");
     final var game = new MainGame(display);
     new Engine(game).run();
+    game.destroy();
     display.destroy();
 
     LOGGER.info().log("Application shutdown");
