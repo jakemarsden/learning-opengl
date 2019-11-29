@@ -1,0 +1,94 @@
+import jakemarsden.gradle.GitHooksPlugin
+import org.gradle.internal.os.OperatingSystem
+
+plugins {
+  id 'application'
+  id 'java'
+  id 'com.github.sherter.google-java-format' version '0.8'
+  id 'org.checkerframework' version '0.4.9'
+}
+
+apply plugin: GitHooksPlugin
+
+repositories {
+  jcenter()
+}
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+ext {
+  junitVersion = '5.5.2'
+  lwjglNatives = findLwjglNatives()
+  lwjglVersion = '3.2.3'
+  slf4jVersion = '1.7.29'
+  slf4jFluentVersion = '0.13.1'
+}
+
+dependencies {
+  implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+  implementation "org.lwjgl:lwjgl"
+  implementation "org.lwjgl:lwjgl-glfw"
+  implementation "org.lwjgl:lwjgl-opengl"
+  runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+  runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+  runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+
+  implementation "org.fissore:slf4j-fluent:$slf4jFluentVersion"
+  implementation "org.slf4j:slf4j-api:$slf4jVersion"
+  runtimeOnly "org.slf4j:slf4j-simple:$slf4jVersion"
+
+  testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+  testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+application {
+  mainClassName = 'jakemarsden.opengl.Application'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+checkerFramework {
+  checkers = [
+    'org.checkerframework.checker.nullness.NullnessChecker'
+  ]
+}
+
+googleJavaFormat {
+  toolVersion = '1.7'
+  options style: 'GOOGLE'
+}
+
+gitHooks {
+  hooks.put 'pre-commit', 'check'
+}
+
+task format {
+  dependsOn tasks.googleJavaFormat
+}
+
+tasks.compileJava.mustRunAfter tasks.googleJavaFormat
+tasks.verifyGoogleJavaFormat.mustRunAfter tasks.googleJavaFormat
+
+private static String findLwjglNatives() {
+  final os = OperatingSystem.current()
+  final arch = System.getProperty 'os.arch'
+  switch (os) {
+    case OperatingSystem.LINUX:
+      switch (arch) {
+        case 'arm':
+          return 'natives-linux-arm32'
+        case 'aarch64':
+        case 'arm64':
+        case 'armv8':
+          return 'natives-linux-arm64'
+        default:
+          return 'natives-linux'
+      }
+    case OperatingSystem.WINDOWS:
+      return 'natives-windows'
+  }
+  throw new IllegalStateException("Unsupported combination of OS and architecture: $os ($arch)")
+}
