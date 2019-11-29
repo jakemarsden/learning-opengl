@@ -65,7 +65,7 @@ public final class ShaderProgramLoader {
     if (glGetShaderi(id, GL_COMPILE_STATUS) != GL_TRUE) {
       LOGGER.error().log(() -> glGetShaderInfoLog(id));
       glDeleteShader(id);
-      throw new IOException("Shader compilation failed: " + clazz.getPackageName() + "." + name);
+      throw new IOException("Shader compilation failed: " + clazz.getPackageName() + "/" + name);
     }
     LOGGER.trace().log(() -> glGetShaderInfoLog(id));
 
@@ -78,14 +78,14 @@ public final class ShaderProgramLoader {
     final var in = clazz.getResourceAsStream(name);
     if (in == null)
       throw new FileNotFoundException(
-          "Unable to find shader program: " + clazz.getPackageName() + "." + name);
+          "Unable to find shader program: " + clazz.getPackageName() + "/" + name);
 
     final byte[] data;
     try {
       data = in.readAllBytes();
     } catch (IOException e) {
       throw new IOException(
-          "Unable to read shader program: " + clazz.getPackageName() + "." + name, e);
+          "Unable to read shader program: " + clazz.getPackageName() + "/" + name, e);
     }
     return new String(data);
   }

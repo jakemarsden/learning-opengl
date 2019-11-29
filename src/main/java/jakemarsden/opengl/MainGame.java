@@ -2,12 +2,13 @@ package jakemarsden.opengl;
 
 import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 
 import jakemarsden.opengl.engine.Game;
 import jakemarsden.opengl.engine.display.Display;
 import jakemarsden.opengl.engine.mesh.StaticMesh;
-import jakemarsden.opengl.engine.mesh.StaticMeshLoader;
-import jakemarsden.opengl.engine.shader.Shader;
+import jakemarsden.opengl.engine.tex.Texture;
+import java.io.IOException;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.units.qual.s;
 import org.fissore.slf4j.FluentLogger;
@@ -19,8 +20,9 @@ final class MainGame implements Game {
 
   private final Display display;
 
-  private final Shader shader;
+  private final MainShader shader;
   private final StaticMesh quadMesh;
+  private final Texture quadTex;
 
   MainGame(@NonNull Display display) {
     LOGGER.info().log("#<init>");
@@ -41,8 +43,20 @@ final class MainGame implements Game {
       -0.5f, -0.5f, 0.0f, //
       -0.5f, 0.5f, 0.0f
     };
+    final float[] quadTexCoords = {
+      1.0f, 0.0f,
+      1.0f, 1.0f,
+      0.0f, 1.0f,
+      0.0f, 0.0f
+    };
     this.shader = new MainShader();
-    this.quadMesh = StaticMeshLoader.triangles(quadIndices, quadVertices);
+    this.quadMesh = StaticMesh.triangles(quadIndices, quadVertices, quadTexCoords);
+
+    try {
+      this.quadTex = Texture.loadImage("test.jpg", MainGame.class, GL_TEXTURE0, false);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     glViewport(0, 0, this.display.getWidth(), this.display.getHeight());
     this.display.setResizeCallback((newWidth, newHeight) -> glViewport(0, 0, newWidth, newHeight));
@@ -55,6 +69,7 @@ final class MainGame implements Game {
     this.display.setVisible(false);
     this.display.setResizeCallback(null);
 
+    this.quadTex.destroy();
     this.quadMesh.destroy();
     this.shader.destroy();
 
@@ -77,9 +92,14 @@ final class MainGame implements Game {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     this.shader.start();
+    this.shader.setTexture(this.quadTex);
+    this.quadTex.bind();
+
     this.quadMesh.bind();
     this.quadMesh.draw();
     this.quadMesh.unbind();
+
+    this.quadTex.unbind();
     this.shader.stop();
 
     this.display.swapDrawBuffers();
