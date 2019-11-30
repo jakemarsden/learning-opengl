@@ -22,6 +22,14 @@ public final class ShaderProgram {
     this.id = id;
   }
 
+  public void start() {
+    glUseProgram(this.id);
+  }
+
+  public void stop() {
+    glUseProgram(GL_NONE);
+  }
+
   public void setUniformInt(@NonNull String name, int value) {
     glUniform1i(this.findUniform(name), value);
   }
@@ -33,14 +41,6 @@ public final class ShaderProgram {
   /** @param value one of {@code GL_TEXTURE0}, {@code GL_TEXTURE1}, {@code GL_TEXTURE2}... */
   public void setUniformTexture(@NonNull String name, int value) {
     this.setUniformInt(name, value - GL_TEXTURE0);
-  }
-
-  public void start() {
-    glUseProgram(this.id);
-  }
-
-  public void stop() {
-    glUseProgram(GL_NONE);
   }
 
   public void destroy() {

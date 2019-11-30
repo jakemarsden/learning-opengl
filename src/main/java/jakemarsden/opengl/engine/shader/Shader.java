@@ -1,7 +1,7 @@
 package jakemarsden.opengl.engine.shader;
 
 import jakemarsden.opengl.engine.math.Matrix4;
-import jakemarsden.opengl.engine.tex.Texture;
+import jakemarsden.opengl.engine.model.Material;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public interface Shader {
@@ -10,7 +10,7 @@ public interface Shader {
 
   void setModelTransform(@NonNull Matrix4 model);
 
-  void setTexture(@NonNull Texture tex);
+  void setMaterial(@NonNull Material mat);
 
   void start();
 

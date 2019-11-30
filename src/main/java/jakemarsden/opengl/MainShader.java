@@ -1,10 +1,10 @@
 package jakemarsden.opengl;
 
 import jakemarsden.opengl.engine.math.Matrix4;
+import jakemarsden.opengl.engine.model.Material;
 import jakemarsden.opengl.engine.shader.Shader;
 import jakemarsden.opengl.engine.shader.ShaderProgram;
 import jakemarsden.opengl.engine.shader.ShaderProgramLoader;
-import jakemarsden.opengl.engine.tex.Texture;
 import java.io.IOException;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -14,7 +14,7 @@ final class MainShader implements Shader {
 
   private static final String UNIFORM_CAMERA_TRANSFORM = "cameraTransform";
   private static final String UNIFORM_MODEL_TRANSFORM = "modelTransform";
-  private static final String UNIFORM_TEXTURE = "texSampler";
+  private static final String UNIFORM_MATERIAL_DIFFUSE = "material.diffuse";
 
   private final ShaderProgram prog;
 
@@ -37,8 +37,8 @@ final class MainShader implements Shader {
   }
 
   @Override
-  public void setTexture(@NonNull Texture tex) {
-    this.prog.setUniformTexture(UNIFORM_TEXTURE, tex.getUnit());
+  public void setMaterial(@NonNull Material mat) {
+    this.prog.setUniformTexture(UNIFORM_MATERIAL_DIFFUSE, mat.diffuseTexUnit);
   }
 
   @Override

@@ -3,16 +3,13 @@ package jakemarsden.opengl;
 import static jakemarsden.opengl.engine.math.Math.PI;
 import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 
 import jakemarsden.opengl.engine.Game;
 import jakemarsden.opengl.engine.camera.PerspectiveCamera;
 import jakemarsden.opengl.engine.display.Display;
 import jakemarsden.opengl.engine.math.Matrix4;
 import jakemarsden.opengl.engine.math.Vector3;
-import jakemarsden.opengl.engine.mesh.StaticMesh;
-import jakemarsden.opengl.engine.tex.Texture;
-import java.io.IOException;
+import jakemarsden.opengl.engine.model.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.units.qual.s;
 import org.fissore.slf4j.FluentLogger;
@@ -26,8 +23,8 @@ final class MainGame implements Game {
 
   private final PerspectiveCamera camera;
   private final MainShader shader;
-  private final StaticMesh quadMesh;
-  private final Texture quadTex;
+
+  private final Model quad;
 
   private Vector3 quadPos = Vector3.zero();
   private Vector3 quadRot = Vector3.of(-0.3f * PI, 0, 0);
@@ -48,30 +45,7 @@ final class MainGame implements Game {
             Vector3.of(0, 0, -1),
             display.getWidth() / (float) display.getHeight());
     this.shader = new MainShader();
-
-    final short[] quadIndices = {
-      0, 1, 3,
-      1, 3, 2
-    };
-    final float[] quadVertices = {
-      0.5f, 0.5f, 0.0f, //
-      0.5f, -0.5f, 0.0f, //
-      -0.5f, -0.5f, 0.0f, //
-      -0.5f, 0.5f, 0.0f
-    };
-    final float[] quadTexCoords = {
-      1.0f, 0.0f,
-      1.0f, 1.0f,
-      0.0f, 1.0f,
-      0.0f, 0.0f
-    };
-    this.quadMesh = StaticMesh.triangles(quadIndices, quadVertices, quadTexCoords);
-
-    try {
-      this.quadTex = Texture.loadImage("test.jpg", MainGame.class, GL_TEXTURE0, false);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    this.quad = MainGame.loadQuad();
 
     glViewport(0, 0, this.display.getWidth(), this.display.getHeight());
     this.display.setResizeCallback(
@@ -88,8 +62,7 @@ final class MainGame implements Game {
     this.display.setVisible(false);
     this.display.setResizeCallback(null);
 
-    this.quadTex.destroy();
-    this.quadMesh.destroy();
+    this.quad.destroy();
     this.shader.destroy();
 
     GL.destroy();
@@ -112,18 +85,38 @@ final class MainGame implements Game {
 
     this.shader.start();
     this.shader.setCameraTransform(this.camera.calculatePvTransform());
+
     this.shader.setModelTransform(Matrix4.transform(quadPos, quadRot, quadScale));
-    this.shader.setTexture(this.quadTex);
-    this.quadTex.bind();
-
-    this.quadMesh.bind();
-    this.quadMesh.draw();
-    this.quadMesh.unbind();
-
-    this.quadTex.unbind();
+    this.quad.draw(shader);
     this.shader.stop();
 
     this.display.swapDrawBuffers();
     this.display.processPendingInputEvents();
+  }
+
+  private static @NonNull Model loadQuad() {
+    final Mesh[] meshes = {
+      StaticMeshLoader.load(
+          GL_TRIANGLES,
+          new float[] {
+            0.5f, 0.5f, 0.0f, //
+            0.5f, -0.5f, 0.0f, //
+            -0.5f, -0.5f, 0.0f, //
+            -0.5f, 0.5f, 0.0f
+          },
+          new float[] {
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+            0.0f, 1.0f,
+            0.0f, 0.0f
+          },
+          new short[] {
+            0, 1, 3,
+            1, 3, 2
+          },
+          Material.of(TextureLoader.loadImage("test.jpg", MainGame.class, false)))
+    };
+
+    return ModelLoader.load(meshes);
   }
 }
