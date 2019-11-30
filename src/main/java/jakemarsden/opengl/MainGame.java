@@ -77,7 +77,7 @@ final class MainGame implements Game {
   public void processInput() {}
 
   @Override
-  public void update(@s double deltaTime) {}
+  public void update(@s float deltaTime, @s float elapsedTime) {}
 
   @Override
   public void render() {

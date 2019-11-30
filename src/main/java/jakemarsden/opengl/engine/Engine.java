@@ -1,9 +1,10 @@
 package jakemarsden.opengl.engine;
 
+import static org.checkerframework.checker.units.UnitsTools.s;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
+import static org.lwjgl.glfw.GLFW.glfwSetTime;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.units.UnitsTools;
 import org.checkerframework.checker.units.qual.s;
 
 public final class Engine implements Runnable {
@@ -18,19 +19,19 @@ public final class Engine implements Runnable {
   public void run() {
     final var game = this.game;
 
-    @s double lastUpdateTime = currentTime();
+    @s float elapsedTime = 0 * s;
+    @s float lastUpdateTime = 0 * s;
+
+    // reset clock so frame 0 is at 0 elapsed time
+    glfwSetTime(glfwGetTime());
+
     while (game.shouldContinue()) {
-      final @s double currUpdateTime = currentTime();
-      final @s double deltaTime = currUpdateTime - lastUpdateTime;
-      lastUpdateTime = currUpdateTime;
-
       game.processInput();
-      game.update(deltaTime);
+      game.update(elapsedTime - lastUpdateTime, elapsedTime);
       game.render();
-    }
-  }
 
-  private static @s double currentTime() {
-    return glfwGetTime() * UnitsTools.s;
+      lastUpdateTime = elapsedTime;
+      elapsedTime = (float) glfwGetTime() * s;
+    }
   }
 }

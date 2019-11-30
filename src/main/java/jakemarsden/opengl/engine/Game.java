@@ -8,7 +8,7 @@ public interface Game {
 
   void processInput();
 
-  void update(@s double deltaTime);
+  void update(@s float deltaTime, @s float elapsedTime);
 
   void render();
 

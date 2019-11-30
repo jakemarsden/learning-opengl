@@ -1,12 +1,12 @@
 package jakemarsden.opengl.engine.camera;
 
 import static jakemarsden.opengl.engine.math.Math.PI;
+import static org.checkerframework.checker.units.UnitsTools.rad;
 
 import jakemarsden.opengl.engine.math.Matrix4;
 import jakemarsden.opengl.engine.math.Projection;
 import jakemarsden.opengl.engine.math.Vector3;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.units.UnitsTools;
 import org.checkerframework.checker.units.qual.radians;
 
 public final class PerspectiveCamera extends BaseCamera {
@@ -17,7 +17,7 @@ public final class PerspectiveCamera extends BaseCamera {
   private float ar;
 
   public PerspectiveCamera(@NonNull Vector3 pos, @NonNull Vector3 dir, float ar) {
-    this(pos, dir, 0.1f, 100.0f, PI / 4 * (float) UnitsTools.rad, ar);
+    this(pos, dir, 0.1f, 100.0f, (PI / 4) * (float) rad, ar);
   }
 
   public PerspectiveCamera(
