@@ -23,6 +23,8 @@ ext {
   lwjglVersion = '3.2.3'
   slf4jVersion = '1.7.29'
   slf4jFluentVersion = '0.13.1'
+
+  env = getBuildEnv()
 }
 
 dependencies {
@@ -51,9 +53,9 @@ test {
 }
 
 checkerFramework {
-  checkers = [
-    'org.checkerframework.checker.nullness.NullnessChecker',
-    'org.checkerframework.checker.units.UnitsChecker'
+  checkers = (env == BuildEnv.Development) ? [] : [
+      'org.checkerframework.checker.nullness.NullnessChecker',
+      'org.checkerframework.checker.units.UnitsChecker'
   ]
 }
 
@@ -63,7 +65,7 @@ googleJavaFormat {
 }
 
 gitHooks {
-  hooks.put 'pre-commit', 'check'
+  hooks.put 'pre-commit', '-Penv=production check'
 }
 
 task format {
@@ -72,6 +74,28 @@ task format {
 
 tasks.compileJava.mustRunAfter tasks.googleJavaFormat
 tasks.verifyGoogleJavaFormat.mustRunAfter tasks.googleJavaFormat
+tasks.verifyGoogleJavaFormat.enabled = (env == BuildEnv.Production)
+
+enum BuildEnv {
+  Development,
+  Production
+}
+
+private BuildEnv getBuildEnv() {
+  final env = hasProperty('env') ? project.env : null
+  switch (env) {
+    case null:
+    case '':
+    case 'dev':
+    case 'development':
+      return BuildEnv.Development
+    case 'prod':
+    case 'production':
+      return BuildEnv.Production
+    default:
+      throw new IllegalStateException("Unsupported 'env' property: '$env'")
+  }
+}
 
 private static String findLwjglNatives() {
   final os = OperatingSystem.current()
