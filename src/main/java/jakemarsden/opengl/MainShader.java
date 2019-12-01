@@ -23,6 +23,9 @@ final class MainShader implements Shader {
   private static final String UNIFORM_LIGHT_AMBIENT = "light.ambient";
   private static final String UNIFORM_LIGHT_DIFFUSE = "light.diffuse";
   private static final String UNIFORM_LIGHT_SPECULAR = "light.specular";
+  private static final String UNIFORM_LIGHT_ATTENUATION_K = "light.attenuation.k";
+  private static final String UNIFORM_LIGHT_ATTENUATION_L = "light.attenuation.l";
+  private static final String UNIFORM_LIGHT_ATTENUATION_Q = "light.attenuation.q";
 
   private static final String UNIFORM_MATERIAL_AMBIENT = "material.ambientMap";
   private static final String UNIFORM_MATERIAL_DIFFUSE = "material.diffuseMap";
@@ -62,6 +65,9 @@ final class MainShader implements Shader {
     this.prog.setUniformVec3(UNIFORM_LIGHT_AMBIENT, light.getAmbient());
     this.prog.setUniformVec3(UNIFORM_LIGHT_DIFFUSE, light.getDiffuse());
     this.prog.setUniformVec3(UNIFORM_LIGHT_SPECULAR, light.getSpecular());
+    this.prog.setUniformFloat(UNIFORM_LIGHT_ATTENUATION_K, light.getAttenuation().k);
+    this.prog.setUniformFloat(UNIFORM_LIGHT_ATTENUATION_L, light.getAttenuation().l);
+    this.prog.setUniformFloat(UNIFORM_LIGHT_ATTENUATION_Q, light.getAttenuation().q);
   }
 
   @Override

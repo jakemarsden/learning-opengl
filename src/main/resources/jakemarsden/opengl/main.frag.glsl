@@ -1,10 +1,17 @@
 # version 330 core
 
+struct Attenuation {
+  float k;
+  float l;
+  float q;
+};
+
 struct PointLight {
   vec3 position;
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
+  Attenuation attenuation;
 };
 
 struct Material {
@@ -25,21 +32,39 @@ uniform vec3 cameraPosition;
 uniform PointLight light;
 uniform Material material;
 
-void main() {
+float dotClamp(vec3 a, vec3 b) {
+  return max(dot(a, b), 0.0);
+}
+
+float calcLightIntensity(Attenuation attenuation, float distance) {
+  return 1 / (
+      attenuation.k * pow(distance, 0) +
+      attenuation.l * pow(distance, 1) +
+      attenuation.q * pow(distance, 2));
+}
+
+vec3 calcPointLight(PointLight light, Material mat) {
   vec3 cameraDirection = normalize(cameraPosition - Position);
+  float lightDistance = length(light.position - Position);
   vec3 lightDirection = normalize(light.position - Position);
-  vec3 reflectionDirection= reflect(-lightDirection, Normal);
+  vec3 reflectionDirection = reflect(-lightDirection, Normal);
 
+  vec3 ambient = light.ambient;
+  vec3 diffuse = light.diffuse * dotClamp(Normal, lightDirection);
+  vec3 specular = light.specular * pow(dotClamp(cameraDirection, reflectionDirection), mat.shininess);
+  vec3 emission = vec3(1);
+
+  ambient *= texture(mat.ambientMap, TexCoord).rgb;
+  diffuse *= texture(mat.diffuseMap, TexCoord).rgb;
+  specular *= texture(mat.specularMap, TexCoord).rgb;
+  emission *= texture(mat.emissionMap, TexCoord).rgb;
+
+  float intensity = calcLightIntensity(light.attenuation, lightDistance);
+  return intensity * (ambient + diffuse + specular + emission);
+}
+
+void main() {
   float opacity = texture(material.diffuseMap, TexCoord).a;
-
-  vec3 ambientColor = texture(material.ambientMap, TexCoord).rgb;
-  vec3 diffuseColor = texture(material.diffuseMap, TexCoord).rgb;
-  vec3 specularColor = texture(material.specularMap, TexCoord).rgb;
-  vec3 emissionColor = texture(material.emissionMap, TexCoord).rgb;
-
-  vec3 ambient = light.ambient * ambientColor;
-  vec3 diffuse = light.diffuse * diffuseColor * max(dot(Normal, lightDirection), 0.0);
-  vec3 specular = light.specular * specularColor * pow(max(dot(cameraDirection, reflectionDirection), 0.0), material.shininess);
-  vec3 emission = emissionColor;
-  FragColor = vec4(ambient + diffuse + specular + emission, opacity);
+  vec3 light = calcPointLight(light, material);
+  FragColor = vec4(light, opacity);
 }

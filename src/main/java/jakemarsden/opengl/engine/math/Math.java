@@ -12,6 +12,10 @@ public final class Math {
   public static final float EPSILON = 1e-6f;
   public static final float PI = (float) java.lang.Math.PI;
 
+  public static float pow(float base, float exponent) {
+    return (float) java.lang.Math.pow(base, exponent);
+  }
+
   public static float sqrt(float value) {
     return (float) java.lang.Math.sqrt(value);
   }

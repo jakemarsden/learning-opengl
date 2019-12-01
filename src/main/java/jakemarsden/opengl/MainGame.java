@@ -1,6 +1,7 @@
 package jakemarsden.opengl;
 
 import static jakemarsden.opengl.engine.math.Math.PI;
+import static java.util.stream.Collectors.toList;
 import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -13,6 +14,8 @@ import jakemarsden.opengl.engine.math.Color3;
 import jakemarsden.opengl.engine.math.Vector2;
 import jakemarsden.opengl.engine.math.Vector3;
 import jakemarsden.opengl.engine.model.*;
+import java.util.Arrays;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.units.qual.s;
 import org.fissore.slf4j.FluentLogger;
@@ -27,7 +30,7 @@ final class MainGame implements Game {
   private final PerspectiveCamera camera;
   private final MainShader shader;
 
-  private final Entity crate;
+  private final List<Entity> crates;
   private final Entity lamp;
   private final PointLight lampLight;
 
@@ -42,24 +45,38 @@ final class MainGame implements Game {
 
     this.camera =
         new PerspectiveCamera(
-            Vector3.of(0, 1, 4),
-            Vector3.unit(0, -0.2f, -1),
+            Vector3.of(0, 0, 3),
+            Vector3.unit(0, 0, -1),
             display.getWidth() / (float) display.getHeight());
 
     this.shader = new MainShader();
 
-    this.crate =
+    final Vector3[] cratePositions = {
+      Vector3.of(2.0f, 5.0f, -15.0f),
+      Vector3.of(-1.5f, -2.2f, -2.5f),
+      Vector3.of(-3.8f, -2.0f, -12.3f),
+      Vector3.of(2.4f, -0.4f, -3.5f),
+      Vector3.of(-1.7f, 3.0f, -7.5f),
+      Vector3.of(1.3f, -2.0f, -2.5f),
+      Vector3.of(1.5f, 2.0f, -2.5f),
+      Vector3.of(1.5f, 0.2f, -1.5f),
+      Vector3.of(-1.3f, 1.0f, -1.5f)
+    };
+    final var crateBuilder =
         MainGame.createCrateEntity()
-            .withPosition(Vector3.zero())
-            .withScale(Vector3.of(0.5f))
-            .withRotationalVelocity(Vector3.of(0, -PI / 8, 0))
-            .build();
+            .withScale(Vector3.of(0.375f))
+            .withRotationalVelocity(Vector3.of(0, -PI / 8, 0));
+    this.crates =
+        Arrays.stream(cratePositions)
+            .map(pos -> crateBuilder.withPosition(pos).build())
+            .collect(toList());
+
     this.lamp =
         MainGame.createLampEntity()
-            .withPosition(Vector3.of(0.75f, 0, 2))
+            .withPosition(Vector3.zero())
             .withScale(Vector3.of(0.05f))
             .build();
-    this.lampLight = new PointLight(Color3.gray(0.1f), Color3.white(), Color3.white());
+    this.lampLight = new PointLight(Color3.gray(0.1f), Color3.white(), Color3.white(), 50);
 
     glViewport(0, 0, this.display.getWidth(), this.display.getHeight());
     this.display.setResizeCallback(
@@ -76,7 +93,8 @@ final class MainGame implements Game {
     this.display.setVisible(false);
     this.display.setResizeCallback(null);
 
-    this.crate.destroy();
+    this.crates.forEach(Entity::destroy);
+    this.crates.clear();
     this.lamp.destroy();
 
     this.shader.destroy();
@@ -94,7 +112,7 @@ final class MainGame implements Game {
 
   @Override
   public void update(@s float deltaTime, @s float elapsedTime) {
-    this.crate.update(deltaTime, elapsedTime);
+    this.crates.forEach(crate -> crate.update(deltaTime, elapsedTime));
     this.lamp.update(deltaTime, elapsedTime);
   }
 
@@ -107,7 +125,7 @@ final class MainGame implements Game {
     this.shader.setCameraTransform(this.camera.calculatePvTransform());
     this.shader.setLight(this.lamp.getPosition(), this.lampLight);
 
-    this.crate.draw(shader);
+    this.crates.forEach(crate -> crate.draw(shader));
     this.lamp.draw(shader);
 
     this.shader.stop();
