@@ -24,30 +24,40 @@ public final class StaticMeshLoader {
       positions[2 + 3 * idx] = vertices[idx].position.z;
     }
 
+    final var normals = new float[3 * vertices.length];
+    for (var idx = 0; idx < vertices.length; idx++) {
+      normals[0 + 3 * idx] = vertices[idx].normal.x;
+      normals[1 + 3 * idx] = vertices[idx].normal.y;
+      normals[2 + 3 * idx] = vertices[idx].normal.z;
+    }
+
     final var texCoords = new float[2 * vertices.length];
     for (var idx = 0; idx < vertices.length; idx++) {
       texCoords[0 + 2 * idx] = vertices[idx].texCoord.x;
       texCoords[1 + 2 * idx] = vertices[idx].texCoord.y;
     }
 
-    return StaticMeshLoader.load(type, positions, texCoords, indices, mat);
+    return StaticMeshLoader.load(type, positions, normals, texCoords, indices, mat);
   }
 
   /** @param type one of {@code GL_TRIANGLE_STRIP}, {@code GL_TRIANGLES}, {@code GL_POINTS}... */
   public static @NonNull StaticMesh load(
       int type,
       float @NonNull [] positions,
+      float @NonNull [] normals,
       float @NonNull [] texCoords,
       short @NonNull [] indices,
       @NonNull Material mat) {
 
     final var vao = glGenVertexArrays();
     final var vbo = glGenBuffers();
+    final var nbo = glGenBuffers();
     final var tbo = glGenBuffers();
     final var ebo = glGenBuffers();
 
     glBindVertexArray(vao);
     StaticMeshLoader.populateAttribArrayBuffer(vbo, StaticMesh.ATTRIB_POSITION, positions, 3);
+    StaticMeshLoader.populateAttribArrayBuffer(nbo, StaticMesh.ATTRIB_NORMAL, normals, 3);
     StaticMeshLoader.populateAttribArrayBuffer(tbo, StaticMesh.ATTRIB_TEX_COORD, texCoords, 2);
     glBindVertexArray(GL_NONE);
 
@@ -55,7 +65,7 @@ public final class StaticMeshLoader {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
 
-    return new StaticMesh(vao, vbo, tbo, ebo, indices.length, type, mat);
+    return new StaticMesh(vao, vbo, nbo, tbo, ebo, indices.length, type, mat);
   }
 
   private static void populateAttribArrayBuffer(

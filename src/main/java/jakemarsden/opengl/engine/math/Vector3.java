@@ -27,6 +27,10 @@ public final class Vector3 implements Vector<Vector3> {
     return Vector3.of(x, y, z).normalise();
   }
 
+  public static @NonNull Vector3 of(float xyz) {
+    return Vector3.of(xyz, xyz, xyz);
+  }
+
   public static @NonNull Vector3 of(float x, float y, float z) {
     return new Vector3(x, y, z);
   }

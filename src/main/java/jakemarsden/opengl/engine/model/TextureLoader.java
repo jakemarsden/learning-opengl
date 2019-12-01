@@ -5,6 +5,8 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
+import jakemarsden.opengl.engine.math.Color3;
+import jakemarsden.opengl.engine.math.Color4;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,6 +16,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.lwjgl.BufferUtils;
 
 public final class TextureLoader {
+
+  public static @NonNull Texture loadImage(@NonNull String fileName, @NonNull Class<?> clazz) {
+    return TextureLoader.loadImage(fileName, clazz, false);
+  }
 
   public static @NonNull Texture loadImage(
       @NonNull String fileName, @NonNull Class<?> clazz, boolean enableAlpha) {
@@ -28,10 +34,39 @@ public final class TextureLoader {
     final int height = img.getHeight();
 
     final var buf = TextureLoader.imageToRgbaBuffer(img, width, height, enableAlpha);
-    return TextureLoader.load(buf, width, height, enableAlpha);
+    return TextureLoader.loadPixels(buf, width, height, enableAlpha);
   }
 
-  private static @NonNull Texture load(
+  public static @NonNull Texture flatColor(Color3 color) {
+    return flatColor(color, 4, 4);
+  }
+
+  public static @NonNull Texture flatColor(Color3 color, int width, int height) {
+    final byte[] rgb = {
+      (byte) (0xff * color.r), //
+      (byte) (0xff * color.g), //
+      (byte) (0xff * color.b)
+    };
+    final var buf = TextureLoader.flatColorToRgbaBuffer(rgb, width, height);
+    return TextureLoader.loadPixels(buf, width, height, false);
+  }
+
+  public static @NonNull Texture flatColor(Color4 color) {
+    return flatColor(color, 4, 4);
+  }
+
+  public static @NonNull Texture flatColor(Color4 color, int width, int height) {
+    final byte[] rgba = {
+      (byte) (0xff * color.r),
+      (byte) (0xff * color.g),
+      (byte) (0xff * color.b),
+      (byte) (0xff * color.a)
+    };
+    final var buf = TextureLoader.flatColorToRgbaBuffer(rgba, width, height);
+    return TextureLoader.loadPixels(buf, width, height, true);
+  }
+
+  private static @NonNull Texture loadPixels(
       @NonNull ByteBuffer pixels, int width, int height, boolean enableAlpha) {
 
     final int id = glGenTextures();
@@ -59,6 +94,23 @@ public final class TextureLoader {
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
     return new Texture(id);
+  }
+
+  /** Turns a single {@code RGB} or {@code RGBA} pixel into a whole image */
+  private static @NonNull ByteBuffer flatColorToRgbaBuffer(
+      byte @NonNull [] color, int width, int height) {
+
+    final int channels = color.length;
+    final var buf = BufferUtils.createByteBuffer(width * height * channels);
+
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        buf.put(color);
+      }
+    }
+
+    buf.flip();
+    return buf;
   }
 
   /**

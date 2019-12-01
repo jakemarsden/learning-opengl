@@ -4,7 +4,7 @@ import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.GL_NONE;
 import static org.lwjgl.opengl.GL20.*;
 
-import jakemarsden.opengl.engine.math.Matrix4;
+import jakemarsden.opengl.engine.math.*;
 import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -32,6 +32,30 @@ public final class ShaderProgram {
 
   public void setUniformInt(@NonNull String name, int value) {
     glUniform1i(this.findUniform(name), value);
+  }
+
+  public void setUniformFloat(@NonNull String name, float value) {
+    glUniform1f(this.findUniform(name), value);
+  }
+
+  public void setUniformVec2(@NonNull String name, @NonNull Vector2 value) {
+    glUniform2f(this.findUniform(name), value.x, value.y);
+  }
+
+  public void setUniformVec3(@NonNull String name, @NonNull Vector3 value) {
+    glUniform3f(this.findUniform(name), value.x, value.y, value.z);
+  }
+
+  public void setUniformVec3(@NonNull String name, @NonNull Color3 value) {
+    glUniform3f(this.findUniform(name), value.r, value.g, value.b);
+  }
+
+  public void setUniformVec4(@NonNull String name, @NonNull Vector4 value) {
+    glUniform4f(this.findUniform(name), value.x, value.y, value.z, value.w);
+  }
+
+  public void setUniformVec4(@NonNull String name, @NonNull Color4 value) {
+    glUniform4f(this.findUniform(name), value.r, value.g, value.b, value.a);
   }
 
   public void setUniformMat4(@NonNull String name, @NonNull Matrix4 value) {

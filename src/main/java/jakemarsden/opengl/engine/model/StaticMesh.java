@@ -9,10 +9,12 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public final class StaticMesh implements Mesh {
 
   static final int ATTRIB_POSITION = 0;
-  static final int ATTRIB_TEX_COORD = 1;
+  static final int ATTRIB_NORMAL = 1;
+  static final int ATTRIB_TEX_COORD = 2;
 
   private final int vao;
   private final int vbo;
+  private final int nbo;
   private final int tbo;
   private final int ebo;
   private final int size;
@@ -21,10 +23,12 @@ public final class StaticMesh implements Mesh {
   private final Material mat;
 
   /** @param type one of {@code GL_TRIANGLE_STRIP}, {@code GL_TRIANGLES}, {@code GL_POINTS}... */
-  StaticMesh(int vao, int vbo, int tbo, int ebo, int size, int type, @NonNull Material mat) {
+  StaticMesh(
+      int vao, int vbo, int nbo, int tbo, int ebo, int size, int type, @NonNull Material mat) {
 
     this.vao = vao;
     this.vbo = vbo;
+    this.nbo = nbo;
     this.tbo = tbo;
     this.ebo = ebo;
     this.size = size;
@@ -37,6 +41,7 @@ public final class StaticMesh implements Mesh {
   public void destroy() {
     glDeleteBuffers(this.ebo);
     glDeleteBuffers(this.vbo);
+    glDeleteBuffers(this.nbo);
     glDeleteBuffers(this.tbo);
     glDeleteVertexArrays(this.vao);
 
@@ -48,6 +53,7 @@ public final class StaticMesh implements Mesh {
     glBindVertexArray(this.vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.ebo);
     glEnableVertexAttribArray(StaticMesh.ATTRIB_POSITION);
+    glEnableVertexAttribArray(StaticMesh.ATTRIB_NORMAL);
     glEnableVertexAttribArray(StaticMesh.ATTRIB_TEX_COORD);
 
     this.mat.bind();
@@ -58,6 +64,7 @@ public final class StaticMesh implements Mesh {
     this.mat.unbind();
 
     glDisableVertexAttribArray(StaticMesh.ATTRIB_POSITION);
+    glDisableVertexAttribArray(StaticMesh.ATTRIB_NORMAL);
     glDisableVertexAttribArray(StaticMesh.ATTRIB_TEX_COORD);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE);
     glBindVertexArray(GL_NONE);
