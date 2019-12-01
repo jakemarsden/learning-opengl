@@ -1,35 +1,51 @@
 package jakemarsden.opengl.engine.light;
 
 import jakemarsden.opengl.engine.math.Color3;
+import jakemarsden.opengl.engine.math.Vector3;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public final class PointLight {
 
+  private Vector3 pos;
   private Color3 ambient;
   private Color3 diffuse;
   private Color3 specular;
   private Attenuation attenuation;
 
   public PointLight(
-      @NonNull Color3 ambient, @NonNull Color3 diffuse, @NonNull Color3 specular, float range) {
+      @NonNull Vector3 pos,
+      @NonNull Color3 ambient,
+      @NonNull Color3 diffuse,
+      @NonNull Color3 specular,
+      float range) {
 
-    this(ambient, diffuse, specular, Attenuation.range(range));
+    this(pos, ambient, diffuse, specular, Attenuation.range(range));
   }
 
   public PointLight(
+      @NonNull Vector3 pos,
       @NonNull Color3 ambient,
       @NonNull Color3 diffuse,
       @NonNull Color3 specular,
       @NonNull Attenuation attenuation) {
 
+    this.pos = pos;
     this.ambient = ambient;
     this.diffuse = diffuse;
     this.specular = specular;
     this.attenuation = attenuation;
   }
 
+  public @NonNull Vector3 getPosition() {
+    return this.pos;
+  }
+
+  public void setPosition(@NonNull Vector3 pos) {
+    this.pos = pos;
+  }
+
   public @NonNull Color3 getAmbient() {
-    return ambient;
+    return this.ambient;
   }
 
   public void setAmbient(@NonNull Color3 ambient) {
@@ -37,7 +53,7 @@ public final class PointLight {
   }
 
   public @NonNull Color3 getDiffuse() {
-    return diffuse;
+    return this.diffuse;
   }
 
   public void setDiffuse(@NonNull Color3 diffuse) {
@@ -45,7 +61,7 @@ public final class PointLight {
   }
 
   public @NonNull Color3 getSpecular() {
-    return specular;
+    return this.specular;
   }
 
   public void setSpecular(@NonNull Color3 specular) {
@@ -53,7 +69,7 @@ public final class PointLight {
   }
 
   public @NonNull Attenuation getAttenuation() {
-    return attenuation;
+    return this.attenuation;
   }
 
   public void setAttenuation(@NonNull Attenuation attenuation) {

@@ -1,7 +1,6 @@
 package jakemarsden.opengl;
 
 import static jakemarsden.opengl.engine.math.Math.PI;
-import static java.util.stream.Collectors.toList;
 import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -14,8 +13,9 @@ import jakemarsden.opengl.engine.math.Color3;
 import jakemarsden.opengl.engine.math.Vector2;
 import jakemarsden.opengl.engine.math.Vector3;
 import jakemarsden.opengl.engine.model.*;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.units.qual.s;
 import org.fissore.slf4j.FluentLogger;
@@ -26,17 +26,19 @@ final class MainGame implements Game {
   private static final FluentLogger LOGGER = getLogger(MainGame.class);
 
   private final Display display;
+  private final Random rnd;
 
   private final PerspectiveCamera camera;
   private final MainShader shader;
 
   private final List<Entity> crates;
-  private final Entity lamp;
-  private final PointLight lampLight;
+  private final List<Entity> lamps;
+  private final List<PointLight> lampLights;
 
-  MainGame(@NonNull Display display) {
+  MainGame(@NonNull Display display, @NonNull Random rnd) {
     LOGGER.info().log("#<init>");
     this.display = display;
+    this.rnd = rnd;
 
     GL.createCapabilities();
     glEnable(GL_DEPTH_TEST);
@@ -45,13 +47,14 @@ final class MainGame implements Game {
 
     this.camera =
         new PerspectiveCamera(
-            Vector3.of(0, 0, 3),
+            Vector3.of(0, 0, 6),
             Vector3.unit(0, 0, -1),
             display.getWidth() / (float) display.getHeight());
 
     this.shader = new MainShader();
 
     final Vector3[] cratePositions = {
+      Vector3.of(0.0f, 0.0f, 0.0f),
       Vector3.of(2.0f, 5.0f, -15.0f),
       Vector3.of(-1.5f, -2.2f, -2.5f),
       Vector3.of(-3.8f, -2.0f, -12.3f),
@@ -62,21 +65,46 @@ final class MainGame implements Game {
       Vector3.of(1.5f, 0.2f, -1.5f),
       Vector3.of(-1.3f, 1.0f, -1.5f)
     };
-    final var crateBuilder =
-        MainGame.createCrateEntity()
-            .withScale(Vector3.of(0.375f))
-            .withRotationalVelocity(Vector3.of(0, -PI / 8, 0));
-    this.crates =
-        Arrays.stream(cratePositions)
-            .map(pos -> crateBuilder.withPosition(pos).build())
-            .collect(toList());
+    this.crates = new ArrayList<>(cratePositions.length);
+    for (Vector3 pos : cratePositions) {
+      final var rot =
+          Vector3.of(
+              2 * PI * this.rnd.nextFloat(),
+              2 * PI * this.rnd.nextFloat(),
+              2 * PI * this.rnd.nextFloat());
+      this.crates.add(
+          MainGame.createCrate()
+              .withPosition(pos)
+              .withRotation(rot)
+              .withRotationalVelocity(Vector3.of(0, -PI / 8, 0))
+              .withScale(Vector3.of(0.375f))
+              .build());
+    }
 
-    this.lamp =
-        MainGame.createLampEntity()
-            .withPosition(Vector3.zero())
-            .withScale(Vector3.of(0.05f))
-            .build();
-    this.lampLight = new PointLight(Color3.gray(0.1f), Color3.white(), Color3.white(), 50);
+    final Vector3[] lampPositions = {
+      Vector3.of(0.7f, 0.2f, 2.0f),
+      Vector3.of(2.3f, -3.3f, -4.0f),
+      Vector3.of(-5.0f, 2.0f, -12.0f),
+      Vector3.of(0.0f, 0.0f, 3.0f)
+    };
+    this.lamps = new ArrayList<>(lampPositions.length);
+    this.lampLights = new ArrayList<>(lampPositions.length);
+    for (final Vector3 pos : lampPositions) {
+      final var rot =
+          Vector3.of(
+              2 * PI * this.rnd.nextFloat(),
+              2 * PI * this.rnd.nextFloat(),
+              2 * PI * this.rnd.nextFloat());
+      final var color =
+          Color3.rgb(this.rnd.nextFloat(), this.rnd.nextFloat(), this.rnd.nextFloat());
+      this.lamps.add(
+          MainGame.createLamp(color)
+              .withPosition(pos)
+              .withRotation(rot)
+              .withScale(Vector3.of(0.075f))
+              .build());
+      this.lampLights.add(new PointLight(pos, Color3.gray(0.1f), color, color, 50));
+    }
 
     glViewport(0, 0, this.display.getWidth(), this.display.getHeight());
     this.display.setResizeCallback(
@@ -94,8 +122,7 @@ final class MainGame implements Game {
     this.display.setResizeCallback(null);
 
     this.crates.forEach(Entity::destroy);
-    this.crates.clear();
-    this.lamp.destroy();
+    this.lamps.forEach(Entity::destroy);
 
     this.shader.destroy();
 
@@ -113,7 +140,12 @@ final class MainGame implements Game {
   @Override
   public void update(@s float deltaTime, @s float elapsedTime) {
     this.crates.forEach(crate -> crate.update(deltaTime, elapsedTime));
-    this.lamp.update(deltaTime, elapsedTime);
+
+    for (var i = 0; i < this.lamps.size(); i++) {
+      final var lamp = this.lamps.get(i);
+      lamp.update(deltaTime, elapsedTime);
+      this.lampLights.get(i).setPosition(lamp.getPosition());
+    }
   }
 
   @Override
@@ -123,10 +155,10 @@ final class MainGame implements Game {
     this.shader.start();
     this.shader.setCameraPosition(this.camera.getPosition());
     this.shader.setCameraTransform(this.camera.calculatePvTransform());
-    this.shader.setLight(this.lamp.getPosition(), this.lampLight);
+    this.shader.setPointLights(this.lampLights.toArray(new PointLight[0]));
 
     this.crates.forEach(crate -> crate.draw(shader));
-    this.lamp.draw(shader);
+    this.lamps.forEach(lamp -> lamp.draw(shader));
 
     this.shader.stop();
 
@@ -134,7 +166,7 @@ final class MainGame implements Game {
     this.display.processPendingInputEvents();
   }
 
-  private static Entity.@NonNull Builder createCrateEntity() {
+  private static Entity.@NonNull Builder createCrate() {
     final var model =
         MainGame.createCubeModel(
             Material.builder()
@@ -144,12 +176,10 @@ final class MainGame implements Game {
     return Entity.builder(model);
   }
 
-  private static Entity.@NonNull Builder createLampEntity() {
+  private static Entity.@NonNull Builder createLamp(Color3 color) {
     final var model =
         MainGame.createCubeModel(
-            Material.builder()
-                .withEmissionLighting(TextureLoader.flatColor(Color3.white()))
-                .build());
+            Material.builder().withEmissionLighting(TextureLoader.flatColor(color)).build());
     return Entity.builder(model);
   }
 

@@ -14,7 +14,7 @@ public interface Shader {
 
   void setCameraPosition(@NonNull Vector3 pos);
 
-  void setLight(@NonNull Vector3 pos, @NonNull PointLight light);
+  void setPointLights(@NonNull PointLight @NonNull [] lights);
 
   void setMaterial(@NonNull Material mat);
 

@@ -5,6 +5,7 @@ import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import jakemarsden.opengl.engine.Engine;
 import jakemarsden.opengl.engine.display.GlfwDisplay;
 import jakemarsden.opengl.lwjgl.LwjglToSlf4jAdapter;
+import java.util.Random;
 import org.fissore.slf4j.FluentLogger;
 import org.lwjgl.system.Configuration;
 
@@ -25,7 +26,7 @@ public class Application implements Runnable {
     LOGGER.info().log("Application startup");
 
     final var display = GlfwDisplay.create(1024, 768, "Learning OpenGL");
-    final var game = new MainGame(display);
+    final var game = new MainGame(display, new Random());
     new Engine(game).run();
     game.destroy();
     display.destroy();

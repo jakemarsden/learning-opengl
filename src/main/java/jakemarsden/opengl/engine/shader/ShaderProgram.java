@@ -30,6 +30,10 @@ public final class ShaderProgram {
     glUseProgram(GL_NONE);
   }
 
+  public void setUniformBool(@NonNull String name, boolean value) {
+    this.setUniformInt(name, value ? GL_TRUE : GL_FALSE);
+  }
+
   public void setUniformInt(@NonNull String name, int value) {
     glUniform1i(this.findUniform(name), value);
   }
