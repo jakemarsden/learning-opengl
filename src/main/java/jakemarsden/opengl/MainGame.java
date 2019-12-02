@@ -8,6 +8,7 @@ import jakemarsden.opengl.engine.Game;
 import jakemarsden.opengl.engine.camera.PerspectiveCamera;
 import jakemarsden.opengl.engine.display.Display;
 import jakemarsden.opengl.engine.entity.Entity;
+import jakemarsden.opengl.engine.light.Attenuation;
 import jakemarsden.opengl.engine.light.PointLight;
 import jakemarsden.opengl.engine.math.Color3;
 import jakemarsden.opengl.engine.math.Vector2;
@@ -53,57 +54,58 @@ final class MainGame implements Game {
 
     this.shader = new MainShader();
 
-    final Vector3[] cratePositions = {
-      Vector3.of(0.0f, 0.0f, 0.0f),
-      Vector3.of(2.0f, 5.0f, -15.0f),
-      Vector3.of(-1.5f, -2.2f, -2.5f),
-      Vector3.of(-3.8f, -2.0f, -12.3f),
-      Vector3.of(2.4f, -0.4f, -3.5f),
-      Vector3.of(-1.7f, 3.0f, -7.5f),
-      Vector3.of(1.3f, -2.0f, -2.5f),
-      Vector3.of(1.5f, 2.0f, -2.5f),
-      Vector3.of(1.5f, 0.2f, -1.5f),
-      Vector3.of(-1.3f, 1.0f, -1.5f)
-    };
-    this.crates = new ArrayList<>(cratePositions.length);
-    for (Vector3 pos : cratePositions) {
+    final var crateCount = 400;
+    final var crateSize = 0.375f;
+
+    final var crateBuilder =
+        MainGame.crateBuilder()
+            .withScale(Vector3.of(crateSize))
+            .withRotationalVelocity(Vector3.of(0, -PI / 8, 0));
+    this.crates = new ArrayList<>(crateCount);
+    for (var idx = 0; idx < crateCount; idx++) {
+      final Vector3 pos =
+          Vector3.of(
+              nextFloat(rnd, -10, 10), //
+              nextFloat(rnd, -10, 10), //
+              nextFloat(rnd, -5, -15));
+      final Vector3 rot =
+          Vector3.of(
+              nextFloat(rnd, 0, 2 * PI), //
+              nextFloat(rnd, 0, 2 * PI), //
+              nextFloat(rnd, 0, 2 * PI));
+      this.crates.add(crateBuilder.withPosition(pos).withRotation(rot).build());
+    }
+
+    final var lampCount = 100;
+    final var lampSize = 0.075f;
+    final var lampAttn = Attenuation.range(30);
+
+    this.lamps = new ArrayList<>(lampCount);
+    this.lampLights = new ArrayList<>(lampCount);
+    for (var i = 0; i < lampCount; i++) {
+      final var pos =
+          Vector3.of(
+              nextFloat(rnd, -10, 10), //
+              nextFloat(rnd, -10, 10), //
+              nextFloat(rnd, -8, 2));
       final var rot =
           Vector3.of(
-              2 * PI * this.rnd.nextFloat(),
-              2 * PI * this.rnd.nextFloat(),
-              2 * PI * this.rnd.nextFloat());
-      this.crates.add(
-          MainGame.createCrate()
+              nextFloat(rnd, 0, 2 * PI), //
+              nextFloat(rnd, 0, 2 * PI), //
+              nextFloat(rnd, 0, 2 * PI));
+      final var color =
+          Color3.rgb(
+              nextFloat(rnd, 0, 1), //
+              nextFloat(rnd, 0, 1), //
+              nextFloat(rnd, 0, 1));
+      this.lamps.add(
+          MainGame.lampBuilder(color)
               .withPosition(pos)
               .withRotation(rot)
               .withRotationalVelocity(Vector3.of(0, -PI / 8, 0))
-              .withScale(Vector3.of(0.375f))
+              .withScale(Vector3.of(lampSize))
               .build());
-    }
-
-    final Vector3[] lampPositions = {
-      Vector3.of(0.7f, 0.2f, 2.0f),
-      Vector3.of(2.3f, -3.3f, -4.0f),
-      Vector3.of(-5.0f, 2.0f, -12.0f),
-      Vector3.of(0.0f, 0.0f, 3.0f)
-    };
-    this.lamps = new ArrayList<>(lampPositions.length);
-    this.lampLights = new ArrayList<>(lampPositions.length);
-    for (final Vector3 pos : lampPositions) {
-      final var rot =
-          Vector3.of(
-              2 * PI * this.rnd.nextFloat(),
-              2 * PI * this.rnd.nextFloat(),
-              2 * PI * this.rnd.nextFloat());
-      final var color =
-          Color3.rgb(this.rnd.nextFloat(), this.rnd.nextFloat(), this.rnd.nextFloat());
-      this.lamps.add(
-          MainGame.createLamp(color)
-              .withPosition(pos)
-              .withRotation(rot)
-              .withScale(Vector3.of(0.075f))
-              .build());
-      this.lampLights.add(new PointLight(pos, Color3.gray(0.1f), color, color, 50));
+      this.lampLights.add(new PointLight(pos, color.times(0.2f), color, color, lampAttn));
     }
 
     glViewport(0, 0, this.display.getWidth(), this.display.getHeight());
@@ -166,7 +168,7 @@ final class MainGame implements Game {
     this.display.processPendingInputEvents();
   }
 
-  private static Entity.@NonNull Builder createCrate() {
+  private static Entity.@NonNull Builder crateBuilder() {
     final var model =
         MainGame.createCubeModel(
             Material.builder()
@@ -176,7 +178,7 @@ final class MainGame implements Game {
     return Entity.builder(model);
   }
 
-  private static Entity.@NonNull Builder createLamp(Color3 color) {
+  private static Entity.@NonNull Builder lampBuilder(Color3 color) {
     final var model =
         MainGame.createCubeModel(
             Material.builder().withEmissionLighting(TextureLoader.flatColor(color)).build());
@@ -228,5 +230,9 @@ final class MainGame implements Game {
 
     final Mesh[] meshes = {StaticMeshLoader.load(GL_TRIANGLES, vertices, indices, mat)};
     return ModelLoader.load(meshes);
+  }
+
+  private static float nextFloat(@NonNull Random rnd, float min, float max) {
+    return min + (max - min) * rnd.nextFloat();
   }
 }

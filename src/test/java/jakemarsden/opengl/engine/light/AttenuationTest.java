@@ -4,20 +4,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * the allowable deltas for these tests are unusually tolerant because the calculated attenuation
+ * values don't really <em>mean</em> anything - they're just "nice" values to use for each range
+ *
+ * @see <a href="http://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation">-Point Light
+ *     Attenuation | Ogre Wiki</a>
+ * @see <a href="http://wiki.ogre3d.org/Light+Attenuation+Shortcut">Light Attenuation Shortcut |
+ *     Ogre Wiki</a>
+ */
 class AttenuationTest {
 
-  /**
-   * the allowable deltas for these tests are unusually tolerant because the calculated attenuation
-   * values don't really <em>mean</em> anything - they're just considered "nice" values to use for
-   * each range
-   *
-   * @see <a href="http://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation">-Point Light
-   *     Attenuation | Ogre Wiki</a>
-   * @see <a href="http://wiki.ogre3d.org/Light+Attenuation+Shortcut">Light Attenuation Shortcut |
-   *     Ogre Wiki</a>
-   */
   @Test
-  void range() {
+  void createWithRange() {
     assertAttenuationEquals(1.0f, 0.0014f, 0.000007f, Attenuation.range(3250));
     assertAttenuationEquals(1.0f, 0.007f, 0.0002f, Attenuation.range(600));
     assertAttenuationEquals(1.0f, 0.014f, 0.0007f, Attenuation.range(325));
@@ -38,6 +37,12 @@ class AttenuationTest {
     assertEquals(expectedK, actual.k, 0);
     assertEquals(expectedL, actual.l, 0.005f);
     assertEquals(expectedQ, actual.q, 0.005f);
+  }
+
+  @Test
+  void noAttenuationIsAlwaysFullIntensity() {
+    assertEquals(1, Attenuation.none().calculateIntensity(1e12f), 0);
+    assertEquals(1, Attenuation.none().calculateIntensity(0), 0);
   }
 
   @Test

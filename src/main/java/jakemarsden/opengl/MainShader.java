@@ -25,7 +25,7 @@ final class MainShader implements Shader {
    * Maximum number of point lights allowed per frame. Name and value must match the shader
    * program's corresponding pre-processor directive
    */
-  public static final int MAX_POINT_LIGHTS = 4;
+  private static final int MAX_POINT_LIGHTS = 8;
 
   private static final String UNIFORM_CAMERA_POSITION = "cameraPosition";
   private static final String UNIFORM_CAMERA_TRANSFORM = "cameraTransform";
@@ -37,9 +37,7 @@ final class MainShader implements Shader {
   private static final String UNIFORM_POINT_LIGHT_AMBIENT = "pointLights[%d].ambient";
   private static final String UNIFORM_POINT_LIGHT_DIFFUSE = "pointLights[%d].diffuse";
   private static final String UNIFORM_POINT_LIGHT_SPECULAR = "pointLights[%d].specular";
-  private static final String UNIFORM_POINT_LIGHT_ATTN_K = "pointLights[%d].attenuation.k";
-  private static final String UNIFORM_POINT_LIGHT_ATTN_L = "pointLights[%d].attenuation.l";
-  private static final String UNIFORM_POINT_LIGHT_ATTN_Q = "pointLights[%d].attenuation.q";
+  private static final String UNIFORM_POINT_LIGHT_ATTENUATION = "pointLights[%d].attenuation";
 
   private static final String UNIFORM_MATERIAL_AMBIENT = "material.ambientMap";
   private static final String UNIFORM_MATERIAL_DIFFUSE = "material.diffuseMap";
@@ -55,6 +53,11 @@ final class MainShader implements Shader {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public byte getMaxSupportedPointLights() {
+    return MAX_POINT_LIGHTS;
   }
 
   @Override
@@ -80,9 +83,12 @@ final class MainShader implements Shader {
           .warn()
           .every(60, SECONDS)
           .log(
-              "Exceeded maximum number of point lights: expected <={} but was {}: some lights may not be rendered, consider increasing the limit or using less lights",
+              "Exceeded maximum number of point lights, expected: <={} but was: {}. Some won't "
+                  + "have a visual effect, consider using only the {} closest or increase the "
+                  + "limit",
               MAX_POINT_LIGHTS,
-              lights.length);
+              lights.length,
+              MAX_POINT_LIGHTS);
     }
     int idx = 0;
     for (; idx < min(lights.length, MAX_POINT_LIGHTS); idx++) this.setPointLight(idx, lights[idx]);
@@ -92,14 +98,12 @@ final class MainShader implements Shader {
   private void setPointLight(int idx, @Nullable PointLight light) {
     this.prog.setUniformBool(String.format(UNIFORM_POINT_LIGHT_ENABLED, idx), light != null);
     if (light == null) return;
-    final var attn = light.getAttenuation();
     this.prog.setUniformVec3(String.format(UNIFORM_POINT_LIGHT_POSITION, idx), light.getPosition());
     this.prog.setUniformVec3(String.format(UNIFORM_POINT_LIGHT_AMBIENT, idx), light.getAmbient());
     this.prog.setUniformVec3(String.format(UNIFORM_POINT_LIGHT_DIFFUSE, idx), light.getDiffuse());
     this.prog.setUniformVec3(String.format(UNIFORM_POINT_LIGHT_SPECULAR, idx), light.getSpecular());
-    this.prog.setUniformFloat(String.format(UNIFORM_POINT_LIGHT_ATTN_K, idx), attn.k);
-    this.prog.setUniformFloat(String.format(UNIFORM_POINT_LIGHT_ATTN_L, idx), attn.l);
-    this.prog.setUniformFloat(String.format(UNIFORM_POINT_LIGHT_ATTN_Q, idx), attn.q);
+    this.prog.setUniformVec3(
+        String.format(UNIFORM_POINT_LIGHT_ATTENUATION, idx), light.getAttenuation());
   }
 
   @Override

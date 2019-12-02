@@ -1,7 +1,5 @@
 package jakemarsden.opengl.engine.math;
 
-import static jakemarsden.opengl.engine.math.Math.sqrt;
-
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -31,6 +29,10 @@ public final class Vector3 implements Vector<Vector3> {
     return Vector3.of(xyz, xyz, xyz);
   }
 
+  public static @NonNull Vector3 of(@NonNull Vector2 xy, float z) {
+    return Vector3.of(xy.x, xy.y, z);
+  }
+
   public static @NonNull Vector3 of(float x, float y, float z) {
     return new Vector3(x, y, z);
   }
@@ -41,21 +43,8 @@ public final class Vector3 implements Vector<Vector3> {
     this.z = z;
   }
 
-  @Override
-  public @NonNull Vector3 normalise() {
-    final var length2 = this.length2();
-    if (length2 == 0 || length2 == 1) return this;
-    return this.divide(sqrt(length2));
-  }
-
-  @Override
-  public float length() {
-    return sqrt(this.length2());
-  }
-
-  @Override
-  public float length2() {
-    return this.dot(this);
+  public @NonNull Vector2 xy() {
+    return Vector2.of(this.x, this.y);
   }
 
   @Override
@@ -63,22 +52,17 @@ public final class Vector3 implements Vector<Vector3> {
     return this.x * operand.x + this.y * operand.y + this.z * operand.z;
   }
 
-  /** Order is important! ({@code a.cross(b) != b.cross(a)} */
+  /** <strong><em>Order is important!</em></strong> ({@code a.cross(b) != b.cross(a)} */
   public @NonNull Vector3 cross(@NonNull Vector3 v) {
     return Vector3.of(
         this.y * v.z - this.z * v.y, this.z * v.x - this.x * v.z, this.x * v.y - this.y * v.x);
   }
 
   @Override
-  public @NonNull Vector3 negate() {
-    return this.times(-1);
-  }
-
-  @Override
   public @NonNull Vector3 reciprocal() {
     if (this.x == 0 || this.y == 0 || this.z == 0)
       throw new ArithmeticException("Division by zero: 1 / " + this);
-    return Vector3.of(1.0f / this.x, 1.0f / this.y, 1.0f / this.z);
+    return Vector3.of(1 / this.x, 1 / this.y, 1 / this.z);
   }
 
   @Override

@@ -17,16 +17,6 @@ public final class PointLight {
       @NonNull Color3 ambient,
       @NonNull Color3 diffuse,
       @NonNull Color3 specular,
-      float range) {
-
-    this(pos, ambient, diffuse, specular, Attenuation.range(range));
-  }
-
-  public PointLight(
-      @NonNull Vector3 pos,
-      @NonNull Color3 ambient,
-      @NonNull Color3 diffuse,
-      @NonNull Color3 specular,
       @NonNull Attenuation attenuation) {
 
     this.pos = pos;

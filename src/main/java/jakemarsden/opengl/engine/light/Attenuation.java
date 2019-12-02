@@ -13,9 +13,14 @@ public final class Attenuation {
   /** quadratic factor */
   public final float q;
 
+  /** No attenuation, i.e. full intensity regardless of distance */
+  public static @NonNull Attenuation none() {
+    return Attenuation.of(1, 0, 0);
+  }
+
   /**
-   * Tends to give good values for lights which start at 100% intensity and drop to near 0 at ~20%
-   * of the specified range
+   * Tends to give good values for lights which start at 100% intensity, but aren't immediately
+   * noticeable at ~20% of the specified range
    *
    * @param range the distance from the light at which the intensity should be (very close to) zero
    * @see <a href="http://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation">-Point Light
@@ -37,12 +42,13 @@ public final class Attenuation {
     this.q = q;
   }
 
+  /** How intense a light should be at a given distance from it */
   public float calculateIntensity(float distance) {
-    return 1 / (this.k * pow(distance, 0) + this.l * pow(distance, 1) + this.q * pow(distance, 2));
+    return 1 / (this.k + this.l * distance + this.q * pow(distance, 2));
   }
 
   @Override
   public @NonNull String toString() {
-    return String.format("LightAttenuation{k=%.2f, l=%.2f, q=%.2f}", this.k, this.l, this.q);
+    return String.format("Attenuation{k=%.2f, l=%.2f, q=%.2f}", this.k, this.l, this.q);
   }
 }

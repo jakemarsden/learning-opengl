@@ -1,7 +1,5 @@
 package jakemarsden.opengl.engine.math;
 
-import static jakemarsden.opengl.engine.math.Math.sqrt;
-
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -19,6 +17,18 @@ public final class Vector4 implements Vector<Vector4> {
     return ZERO;
   }
 
+  public static @NonNull Vector4 of(float xyzw) {
+    return Vector4.of(xyzw, xyzw, xyzw, xyzw);
+  }
+
+  public static @NonNull Vector4 of(@NonNull Vector2 xy, float z, float w) {
+    return Vector4.of(xy.x, xy.y, z, w);
+  }
+
+  public static @NonNull Vector4 of(@NonNull Vector3 xyz, float w) {
+    return Vector4.of(xyz.x, xyz.y, xyz.z, w);
+  }
+
   public static @NonNull Vector4 of(float x, float y, float z, float w) {
     return new Vector4(x, y, z, w);
   }
@@ -34,21 +44,12 @@ public final class Vector4 implements Vector<Vector4> {
     this.w = w;
   }
 
-  @Override
-  public @NonNull Vector4 normalise() {
-    final var length2 = this.length2();
-    if (length2 == 0 || length2 == 1) return this;
-    return this.divide(sqrt(length2));
+  public @NonNull Vector2 xy() {
+    return Vector2.of(this.x, this.y);
   }
 
-  @Override
-  public float length() {
-    return sqrt(this.length2());
-  }
-
-  @Override
-  public float length2() {
-    return this.dot(this);
+  public @NonNull Vector3 xyz() {
+    return Vector3.of(this.x, this.y, this.z);
   }
 
   @Override
@@ -57,15 +58,10 @@ public final class Vector4 implements Vector<Vector4> {
   }
 
   @Override
-  public @NonNull Vector4 negate() {
-    return this.times(-1);
-  }
-
-  @Override
   public @NonNull Vector4 reciprocal() {
     if (this.x == 0 || this.y == 0 || this.z == 0 || this.w == 0)
       throw new ArithmeticException("Division by zero: 1 / " + this);
-    return Vector4.of(1.0f / this.x, 1.0f / this.y, 1.0f / this.z, 1.0f / this.w);
+    return Vector4.of(1 / this.x, 1 / this.y, 1 / this.z, 1 / this.w);
   }
 
   @Override

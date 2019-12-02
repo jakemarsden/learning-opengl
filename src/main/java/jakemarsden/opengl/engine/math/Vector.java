@@ -1,19 +1,38 @@
 package jakemarsden.opengl.engine.math;
 
+import static jakemarsden.opengl.engine.math.Math.sqrt;
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+/**
+ * @param <TThis> must be the subclass' own type for all subclasses, e.g. {@code final class
+ *     MyVector implements Vector<MyVector>}
+ */
 interface Vector<TThis extends Vector<TThis>> {
 
-  TThis normalise();
+  default float length() {
+    return sqrt(this.length2());
+  }
 
-  float length();
-
-  float length2();
+  // this must be of type TThis for all subclasses
+  @SuppressWarnings("unchecked")
+  default float length2() {
+    return this.dot((TThis) this);
+  }
 
   float dot(@NonNull TThis operand);
 
-  @NonNull
-  TThis negate();
+  // this must be of type TThis for all subclasses
+  @SuppressWarnings("unchecked")
+  default @NonNull TThis normalise() {
+    final var length2 = this.length2();
+    if (length2 == 0 || length2 == 1) return (TThis) this;
+    return this.divide(sqrt(length2));
+  }
+
+  default @NonNull TThis negate() {
+    return this.times(-1);
+  }
 
   @NonNull
   TThis reciprocal();

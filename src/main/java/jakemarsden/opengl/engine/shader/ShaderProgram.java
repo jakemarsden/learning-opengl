@@ -4,6 +4,7 @@ import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.GL_NONE;
 import static org.lwjgl.opengl.GL20.*;
 
+import jakemarsden.opengl.engine.light.Attenuation;
 import jakemarsden.opengl.engine.math.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +53,10 @@ public final class ShaderProgram {
 
   public void setUniformVec3(@NonNull String name, @NonNull Color3 value) {
     glUniform3f(this.findUniform(name), value.r, value.g, value.b);
+  }
+
+  public void setUniformVec3(@NonNull String name, @NonNull Attenuation value) {
+    glUniform3f(this.findUniform(name), value.k, value.l, value.q);
   }
 
   public void setUniformVec4(@NonNull String name, @NonNull Vector4 value) {

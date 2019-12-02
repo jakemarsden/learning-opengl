@@ -1,7 +1,5 @@
 package jakemarsden.opengl.engine.math;
 
-import static jakemarsden.opengl.engine.math.Math.sqrt;
-
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -21,6 +19,10 @@ public final class Vector2 implements Vector<Vector2> {
     return Vector2.of(x, y).normalise();
   }
 
+  public static @NonNull Vector2 of(float xy) {
+    return Vector2.of(xy, xy);
+  }
+
   public static @NonNull Vector2 of(float x, float y) {
     return new Vector2(x, y);
   }
@@ -31,36 +33,14 @@ public final class Vector2 implements Vector<Vector2> {
   }
 
   @Override
-  public @NonNull Vector2 normalise() {
-    final var length2 = this.length2();
-    if (length2 == 0 || length2 == 1) return this;
-    return this.divide(sqrt(length2));
-  }
-
-  @Override
-  public float length() {
-    return sqrt(this.length2());
-  }
-
-  @Override
-  public float length2() {
-    return this.dot(this);
-  }
-
-  @Override
   public float dot(@NonNull Vector2 operand) {
     return this.x * operand.x + this.y * operand.y;
   }
 
   @Override
-  public @NonNull Vector2 negate() {
-    return this.times(-1);
-  }
-
-  @Override
   public @NonNull Vector2 reciprocal() {
     if (this.x == 0 || this.y == 0) throw new ArithmeticException("Division by zero: 1 / " + this);
-    return Vector2.of(1.0f / this.x, 1.0f / this.y);
+    return Vector2.of(1 / this.x, 1 / this.y);
   }
 
   @Override
