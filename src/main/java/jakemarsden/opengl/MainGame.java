@@ -1,6 +1,7 @@
 package jakemarsden.opengl;
 
 import static jakemarsden.opengl.engine.math.Math.PI;
+import static java.util.Comparator.comparingDouble;
 import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -17,6 +18,7 @@ import jakemarsden.opengl.engine.model.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.units.qual.s;
 import org.fissore.slf4j.FluentLogger;
@@ -57,27 +59,30 @@ final class MainGame implements Game {
     final var crateCount = 400;
     final var crateSize = 0.375f;
 
-    final var crateBuilder =
-        MainGame.crateBuilder()
-            .withScale(Vector3.of(crateSize))
-            .withRotationalVelocity(Vector3.of(0, -PI / 8, 0));
+    final var crateBuilder = MainGame.crateBuilder();
     this.crates = new ArrayList<>(crateCount);
     for (var idx = 0; idx < crateCount; idx++) {
-      final Vector3 pos =
+      final var pos =
           Vector3.of(
               nextFloat(rnd, -10, 10), //
               nextFloat(rnd, -10, 10), //
-              nextFloat(rnd, -5, -15));
-      final Vector3 rot =
+              nextFloat(rnd, -8, -4));
+      final var rot =
           Vector3.of(
-              nextFloat(rnd, 0, 2 * PI), //
-              nextFloat(rnd, 0, 2 * PI), //
-              nextFloat(rnd, 0, 2 * PI));
-      this.crates.add(crateBuilder.withPosition(pos).withRotation(rot).build());
+              nextFloat(rnd, 0, 2 * PI), nextFloat(rnd, 0, 2 * PI), nextFloat(rnd, 0, 2 * PI));
+      final var rotVel = Vector3.of(0, nextFloat(rnd, -0.25f * PI, 0.25f * PI), 0);
+
+      this.crates.add(
+          crateBuilder
+              .withPosition(pos)
+              .withRotation(rot)
+              .withRotationalVelocity(rotVel)
+              .withScale(Vector3.of(crateSize))
+              .build());
     }
 
     final var lampCount = 100;
-    final var lampSize = 0.075f;
+    final var lampSize = 0.1f;
     final var lampAttn = Attenuation.range(30);
 
     this.lamps = new ArrayList<>(lampCount);
@@ -87,7 +92,7 @@ final class MainGame implements Game {
           Vector3.of(
               nextFloat(rnd, -10, 10), //
               nextFloat(rnd, -10, 10), //
-              nextFloat(rnd, -8, 2));
+              nextFloat(rnd, -8, -4));
       final var rot =
           Vector3.of(
               nextFloat(rnd, 0, 2 * PI), //
@@ -98,11 +103,11 @@ final class MainGame implements Game {
               nextFloat(rnd, 0, 1), //
               nextFloat(rnd, 0, 1), //
               nextFloat(rnd, 0, 1));
+
       this.lamps.add(
           MainGame.lampBuilder(color)
               .withPosition(pos)
               .withRotation(rot)
-              .withRotationalVelocity(Vector3.of(0, -PI / 8, 0))
               .withScale(Vector3.of(lampSize))
               .build());
       this.lampLights.add(new PointLight(pos, color.times(0.2f), color, color, lampAttn));
@@ -157,15 +162,29 @@ final class MainGame implements Game {
     this.shader.start();
     this.shader.setCameraPosition(this.camera.getPosition());
     this.shader.setCameraTransform(this.camera.calculatePvTransform());
-    this.shader.setPointLights(this.lampLights.toArray(new PointLight[0]));
 
-    this.crates.forEach(crate -> crate.draw(shader));
-    this.lamps.forEach(lamp -> lamp.draw(shader));
+    final var lightCount = this.shader.getMaxSupportedPointLights();
+    final var entities = Stream.concat(this.crates.stream(), this.lamps.stream());
+    entities.forEach(
+        entity -> {
+          final var closestLightsToEntity =
+              this.findClosestPointLightsTo(entity.getPosition())
+                  .limit(lightCount)
+                  .toArray(PointLight[]::new);
+
+          this.shader.setPointLights(closestLightsToEntity);
+          entity.draw(shader);
+        });
 
     this.shader.stop();
 
     this.display.swapDrawBuffers();
     this.display.processPendingInputEvents();
+  }
+
+  private @NonNull Stream<@NonNull PointLight> findClosestPointLightsTo(@NonNull Vector3 target) {
+    return this.lampLights.stream()
+        .sorted(comparingDouble(light -> light.getPosition().minus(target).length2()));
   }
 
   private static Entity.@NonNull Builder crateBuilder() {

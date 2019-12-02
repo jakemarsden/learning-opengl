@@ -4,7 +4,7 @@
  * Maximum number of point lights allowed per frame. Name and value must match the shader class'
  * corresponding constant
  */
-# define MAX_POINT_LIGHTS 8
+# define MAX_POINT_LIGHTS 4
 
 struct PointLight {
   bool enabled;

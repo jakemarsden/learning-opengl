@@ -25,7 +25,7 @@ final class MainShader implements Shader {
    * Maximum number of point lights allowed per frame. Name and value must match the shader
    * program's corresponding pre-processor directive
    */
-  private static final int MAX_POINT_LIGHTS = 8;
+  private static final int MAX_POINT_LIGHTS = 4;
 
   private static final String UNIFORM_CAMERA_POSITION = "cameraPosition";
   private static final String UNIFORM_CAMERA_TRANSFORM = "cameraTransform";
