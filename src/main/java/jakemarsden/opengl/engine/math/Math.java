@@ -36,6 +36,14 @@ public final class Math {
     return 1 / (float) java.lang.Math.tan(theta);
   }
 
+  public static float toDegrees(float radians) {
+    return (float) java.lang.Math.toDegrees(radians);
+  }
+
+  public static float toRadians(float degrees) {
+    return (float) java.lang.Math.toRadians(degrees);
+  }
+
   private Math() {
     throw new UnsupportedOperationException();
   }

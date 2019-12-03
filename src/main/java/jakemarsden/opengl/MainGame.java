@@ -1,6 +1,6 @@
 package jakemarsden.opengl;
 
-import static jakemarsden.opengl.engine.math.Math.PI;
+import static jakemarsden.opengl.engine.math.Math.*;
 import static java.util.Comparator.comparingDouble;
 import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.*;
@@ -9,8 +9,7 @@ import jakemarsden.opengl.engine.Game;
 import jakemarsden.opengl.engine.camera.PerspectiveCamera;
 import jakemarsden.opengl.engine.display.Display;
 import jakemarsden.opengl.engine.entity.Entity;
-import jakemarsden.opengl.engine.light.Attenuation;
-import jakemarsden.opengl.engine.light.PointLight;
+import jakemarsden.opengl.engine.light.*;
 import jakemarsden.opengl.engine.math.Color3;
 import jakemarsden.opengl.engine.math.Vector2;
 import jakemarsden.opengl.engine.math.Vector3;
@@ -36,7 +35,10 @@ final class MainGame implements Game {
 
   private final List<Entity> crates;
   private final List<Entity> lamps;
+
+  private final DirectionalLight sunLight;
   private final List<PointLight> lampLights;
+  private final List<SpotLight> spotLights;
 
   MainGame(@NonNull Display display, @NonNull Random rnd) {
     LOGGER.info().log("#<init>");
@@ -110,8 +112,25 @@ final class MainGame implements Game {
               .withRotation(rot)
               .withScale(Vector3.of(lampSize))
               .build());
-      this.lampLights.add(new PointLight(pos, color.times(0.2f), color, color, lampAttn));
+      this.lampLights.add(new PointLight(pos, lampAttn, color.times(0.1f), color, color));
     }
+
+    final var sunColor = Color3.gray(0.5f);
+    this.sunLight =
+        new DirectionalLight(
+            Vector3.unit(-0.2f, -1.0f, -0.3f), sunColor.times(0.1f), sunColor, sunColor);
+
+    final var torchColor = Color3.rgb(0.75f, 0.75f, 0.25f);
+    final var torchLight =
+        new SpotLight(
+            camera.getPosition(),
+            camera.getDirection(),
+            toRadians(25),
+            toRadians(35),
+            torchColor.times(0.1f),
+            torchColor,
+            torchColor);
+    this.spotLights = List.of(torchLight);
 
     glViewport(0, 0, this.display.getWidth(), this.display.getHeight());
     this.display.setResizeCallback(
@@ -162,6 +181,9 @@ final class MainGame implements Game {
     this.shader.start();
     this.shader.setCameraPosition(this.camera.getPosition());
     this.shader.setCameraTransform(this.camera.calculatePvTransform());
+
+    this.shader.setDirectionalLight(this.sunLight);
+    this.shader.setSpotLights(this.spotLights.toArray(SpotLight[]::new));
 
     final var lightCount = this.shader.getMaxSupportedPointLights();
     final var entities = Stream.concat(this.crates.stream(), this.lamps.stream());

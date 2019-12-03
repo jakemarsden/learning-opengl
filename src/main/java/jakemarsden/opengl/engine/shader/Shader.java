@@ -1,11 +1,12 @@
 package jakemarsden.opengl.engine.shader;
 
+import jakemarsden.opengl.engine.light.DirectionalLight;
 import jakemarsden.opengl.engine.light.PointLight;
+import jakemarsden.opengl.engine.light.SpotLight;
 import jakemarsden.opengl.engine.math.Matrix4;
 import jakemarsden.opengl.engine.math.Vector3;
 import jakemarsden.opengl.engine.model.Material;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface Shader {
 
@@ -17,7 +18,11 @@ public interface Shader {
 
   void setModelTransform(@NonNull Matrix4 model);
 
-  void setPointLights(@Nullable PointLight @NonNull [] lights);
+  void setDirectionalLight(@NonNull DirectionalLight light);
+
+  void setPointLights(@NonNull PointLight @NonNull [] lights);
+
+  void setSpotLights(@NonNull SpotLight @NonNull [] lights);
 
   void setMaterial(@NonNull Material mat);
 
