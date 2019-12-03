@@ -52,6 +52,25 @@ test {
   useJUnitPlatform()
 }
 
+tasks.withType(JavaCompile) {
+  options.compilerArgs += ['-Xlint:all', '-Xlint:-processing']
+  if (env == BuildEnv.Production) options.compilerArgs += '-Werror'
+  options.deprecation = true
+  options.encoding = 'UTF-8'
+
+  mustRunAfter tasks.googleJavaFormat
+}
+
+tasks.withType(Javadoc) {
+  // see: https://bugs.openjdk.java.net/browse/JDK-8200363
+  options.addBooleanOption('Xwerror', env == BuildEnv.Production)
+  options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaExec) {
+  enableAssertions = env == BuildEnv.Development
+}
+
 checkerFramework {
   checkers = (env == BuildEnv.Development) ? [] : [
       'org.checkerframework.checker.nullness.NullnessChecker',
@@ -59,22 +78,23 @@ checkerFramework {
   ]
 }
 
+task format {
+  dependsOn tasks.googleJavaFormat
+}
+
 googleJavaFormat {
   toolVersion = '1.7'
   options style: 'GOOGLE'
 }
 
+verifyGoogleJavaFormat {
+  enabled = env == BuildEnv.Production
+  mustRunAfter tasks.googleJavaFormat
+}
+
 gitHooks {
   hooks.put 'pre-commit', '-Penv=production check'
 }
-
-task format {
-  dependsOn tasks.googleJavaFormat
-}
-
-tasks.compileJava.mustRunAfter tasks.googleJavaFormat
-tasks.verifyGoogleJavaFormat.mustRunAfter tasks.googleJavaFormat
-tasks.verifyGoogleJavaFormat.enabled = (env == BuildEnv.Production)
 
 enum BuildEnv {
   Development,

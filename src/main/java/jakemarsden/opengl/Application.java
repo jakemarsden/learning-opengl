@@ -23,7 +23,9 @@ public class Application implements Runnable {
 
   @Override
   public void run() {
-    LOGGER.info().log("Application startup");
+    LOGGER
+        .info()
+        .log("Application startup: assertions are {}", assertsEnabled() ? "ENABLED" : "DISABLED");
 
     final var display = GlfwDisplay.create(1024, 768, "Learning OpenGL");
     final var game = new MainGame(display, new Random());
@@ -35,4 +37,11 @@ public class Application implements Runnable {
   }
 
   private Application() {}
+
+  @SuppressWarnings("AssertWithSideEffects")
+  private static boolean assertsEnabled() {
+    boolean enabled = false;
+    assert enabled = true;
+    return enabled;
+  }
 }
