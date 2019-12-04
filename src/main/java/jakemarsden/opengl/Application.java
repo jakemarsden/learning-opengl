@@ -4,6 +4,7 @@ import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 
 import jakemarsden.opengl.engine.Engine;
 import jakemarsden.opengl.engine.display.GlfwDisplay;
+import jakemarsden.opengl.engine.res.ResourceLoader;
 import jakemarsden.opengl.lwjgl.LwjglToSlf4jAdapter;
 import java.util.Random;
 import org.fissore.slf4j.FluentLogger;
@@ -28,7 +29,9 @@ public class Application implements Runnable {
         .log("Application startup: assertions are {}", assertsEnabled() ? "ENABLED" : "DISABLED");
 
     final var display = GlfwDisplay.create(1024, 768, "Learning OpenGL");
-    final var game = new MainGame(display, new Random());
+    final var resLoader = ResourceLoader.create(Application.class, "res");
+
+    final var game = new MainGame(display, resLoader, new Random());
     new Engine(game).run();
     game.destroy();
     display.destroy();

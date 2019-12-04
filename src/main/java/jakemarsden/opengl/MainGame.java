@@ -14,6 +14,8 @@ import jakemarsden.opengl.engine.math.Color3;
 import jakemarsden.opengl.engine.math.Vector2;
 import jakemarsden.opengl.engine.math.Vector3;
 import jakemarsden.opengl.engine.model.*;
+import jakemarsden.opengl.engine.res.ResourceLoader;
+import jakemarsden.opengl.engine.res.texture.TextureLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -26,6 +28,8 @@ import org.lwjgl.opengl.GL;
 final class MainGame implements Game {
 
   private static final FluentLogger LOGGER = getLogger(MainGame.class);
+
+  private final TextureLoader texLoader;
 
   private final Display display;
   private final Random rnd;
@@ -40,9 +44,11 @@ final class MainGame implements Game {
   private final List<PointLight> lampLights;
   private final List<SpotLight> spotLights;
 
-  MainGame(@NonNull Display display, @NonNull Random rnd) {
+  MainGame(@NonNull Display display, @NonNull ResourceLoader resLoader, @NonNull Random rnd) {
     LOGGER.info().log("#<init>");
+
     this.display = display;
+    this.texLoader = TextureLoader.create(resLoader);
     this.rnd = rnd;
 
     GL.createCapabilities();
@@ -61,7 +67,6 @@ final class MainGame implements Game {
     final var crateCount = 400;
     final var crateSize = 0.375f;
 
-    final var crateBuilder = MainGame.crateBuilder();
     this.crates = new ArrayList<>(crateCount);
     for (var idx = 0; idx < crateCount; idx++) {
       final var pos =
@@ -75,7 +80,7 @@ final class MainGame implements Game {
       final var rotVel = Vector3.of(0, nextFloat(rnd, -0.25f * PI, 0.25f * PI), 0);
 
       this.crates.add(
-          crateBuilder
+          MainGame.crateBuilder(this.texLoader)
               .withPosition(pos)
               .withRotation(rot)
               .withRotationalVelocity(rotVel)
@@ -107,7 +112,7 @@ final class MainGame implements Game {
               nextFloat(rnd, 0, 1));
 
       this.lamps.add(
-          MainGame.lampBuilder(color)
+          MainGame.lampBuilder(color, this.texLoader)
               .withPosition(pos)
               .withRotation(rot)
               .withScale(Vector3.of(lampSize))
@@ -209,20 +214,23 @@ final class MainGame implements Game {
         .sorted(comparingDouble(light -> light.getPosition().minus(target).length2()));
   }
 
-  private static Entity.@NonNull Builder crateBuilder() {
+  private static Entity.@NonNull Builder crateBuilder(@NonNull TextureLoader texLoader) {
     final var model =
         MainGame.createCubeModel(
             Material.builder()
-                .withDiffuseLighting(TextureLoader.loadImage("crate.diff.png", MainGame.class))
-                .withSpecularLighting(TextureLoader.loadImage("crate.spec.png", MainGame.class), 32)
+                .withAmbientLighting(texLoader.loadImage("crate.texture.png"))
+                .withDiffuseLighting(texLoader.loadImage("crate.texture.png"))
+                .withSpecularLighting(texLoader.loadImage("crate.texture.specular.png"), 32)
                 .build());
     return Entity.builder(model);
   }
 
-  private static Entity.@NonNull Builder lampBuilder(Color3 color) {
+  private static Entity.@NonNull Builder lampBuilder(
+      @NonNull Color3 color, @NonNull TextureLoader texLoader) {
+
     final var model =
         MainGame.createCubeModel(
-            Material.builder().withEmissionLighting(TextureLoader.flatColor(color)).build());
+            Material.builder().withEmissionLighting(texLoader.loadColor(color)).build());
     return Entity.builder(model);
   }
 

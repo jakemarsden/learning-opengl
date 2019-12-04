@@ -2,6 +2,7 @@ package jakemarsden.opengl.engine.model;
 
 import static org.lwjgl.opengl.GL13.*;
 
+import jakemarsden.opengl.engine.res.texture.Texture;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -95,11 +96,7 @@ public final class Material {
 
     public @NonNull Material build() {
       return new Material(
-          this.ambientMap != null ? this.ambientMap : this.diffuseMap,
-          this.diffuseMap,
-          this.specularMap,
-          this.emissionMap,
-          this.shininess);
+          this.ambientMap, this.diffuseMap, this.specularMap, this.emissionMap, this.shininess);
     }
   }
 }
