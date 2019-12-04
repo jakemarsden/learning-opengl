@@ -1,6 +1,7 @@
 package jakemarsden.opengl;
 
-import static jakemarsden.opengl.engine.math.Math.*;
+import static jakemarsden.opengl.engine.math.Math.PI;
+import static jakemarsden.opengl.engine.math.Math.toRadians;
 import static java.util.Comparator.comparingDouble;
 import static org.fissore.slf4j.FluentLoggerFactory.getLogger;
 import static org.lwjgl.opengl.GL11.*;
@@ -9,12 +10,17 @@ import jakemarsden.opengl.engine.Game;
 import jakemarsden.opengl.engine.camera.PerspectiveCamera;
 import jakemarsden.opengl.engine.display.Display;
 import jakemarsden.opengl.engine.entity.Entity;
-import jakemarsden.opengl.engine.light.*;
+import jakemarsden.opengl.engine.light.Attenuation;
+import jakemarsden.opengl.engine.light.DirectionalLight;
+import jakemarsden.opengl.engine.light.PointLight;
+import jakemarsden.opengl.engine.light.SpotLight;
 import jakemarsden.opengl.engine.math.Color3;
 import jakemarsden.opengl.engine.math.Vector2;
 import jakemarsden.opengl.engine.math.Vector3;
 import jakemarsden.opengl.engine.model.*;
 import jakemarsden.opengl.engine.res.ResourceLoader;
+import jakemarsden.opengl.engine.res.material.Material;
+import jakemarsden.opengl.engine.res.material.MaterialLoader;
 import jakemarsden.opengl.engine.res.texture.TextureLoader;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +35,7 @@ final class MainGame implements Game {
 
   private static final FluentLogger LOGGER = getLogger(MainGame.class);
 
-  private final TextureLoader texLoader;
+  private final MaterialLoader matLoader;
 
   private final Display display;
   private final Random rnd;
@@ -48,7 +54,7 @@ final class MainGame implements Game {
     LOGGER.info().log("#<init>");
 
     this.display = display;
-    this.texLoader = TextureLoader.create(resLoader);
+    this.matLoader = MaterialLoader.create(resLoader, TextureLoader.create(resLoader));
     this.rnd = rnd;
 
     GL.createCapabilities();
@@ -80,7 +86,7 @@ final class MainGame implements Game {
       final var rotVel = Vector3.of(0, nextFloat(rnd, -0.25f * PI, 0.25f * PI), 0);
 
       this.crates.add(
-          MainGame.crateBuilder(this.texLoader)
+          Entity.builder(createCubeModel(this.matLoader.load("crate.material.yml")))
               .withPosition(pos)
               .withRotation(rot)
               .withRotationalVelocity(rotVel)
@@ -105,19 +111,16 @@ final class MainGame implements Game {
               nextFloat(rnd, 0, 2 * PI), //
               nextFloat(rnd, 0, 2 * PI), //
               nextFloat(rnd, 0, 2 * PI));
-      final var color =
-          Color3.rgb(
-              nextFloat(rnd, 0, 1), //
-              nextFloat(rnd, 0, 1), //
-              nextFloat(rnd, 0, 1));
 
       this.lamps.add(
-          MainGame.lampBuilder(color, this.texLoader)
+          Entity.builder(createCubeModel(this.matLoader.load("lamp.material.yml")))
               .withPosition(pos)
               .withRotation(rot)
               .withScale(Vector3.of(lampSize))
               .build());
-      this.lampLights.add(new PointLight(pos, lampAttn, color.times(0.1f), color, color));
+      this.lampLights.add(
+          new PointLight(
+              pos, lampAttn, Color3.white().times(0.1f), Color3.white(), Color3.white()));
     }
 
     final var sunColor = Color3.gray(0.5f);
@@ -212,26 +215,6 @@ final class MainGame implements Game {
   private @NonNull Stream<@NonNull PointLight> findClosestPointLightsTo(@NonNull Vector3 target) {
     return this.lampLights.stream()
         .sorted(comparingDouble(light -> light.getPosition().minus(target).length2()));
-  }
-
-  private static Entity.@NonNull Builder crateBuilder(@NonNull TextureLoader texLoader) {
-    final var model =
-        MainGame.createCubeModel(
-            Material.builder()
-                .withAmbientLighting(texLoader.loadImage("crate.texture.png"))
-                .withDiffuseLighting(texLoader.loadImage("crate.texture.png"))
-                .withSpecularLighting(texLoader.loadImage("crate.texture.specular.png"), 32)
-                .build());
-    return Entity.builder(model);
-  }
-
-  private static Entity.@NonNull Builder lampBuilder(
-      @NonNull Color3 color, @NonNull TextureLoader texLoader) {
-
-    final var model =
-        MainGame.createCubeModel(
-            Material.builder().withEmissionLighting(texLoader.loadColor(color)).build());
-    return Entity.builder(model);
   }
 
   private static @NonNull Model createCubeModel(@NonNull Material mat) {

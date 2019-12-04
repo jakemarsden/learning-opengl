@@ -5,7 +5,7 @@ import jakemarsden.opengl.engine.light.PointLight;
 import jakemarsden.opengl.engine.light.SpotLight;
 import jakemarsden.opengl.engine.math.Matrix4;
 import jakemarsden.opengl.engine.math.Vector3;
-import jakemarsden.opengl.engine.model.Material;
+import jakemarsden.opengl.engine.res.material.Material;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public interface Shader {

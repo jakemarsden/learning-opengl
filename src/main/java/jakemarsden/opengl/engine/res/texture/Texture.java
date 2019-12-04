@@ -49,12 +49,12 @@ public abstract class Texture {
   public abstract @NonNull String toString();
 
   @Override
-  public final int hashCode() {
+  public int hashCode() {
     return this.id;
   }
 
   @Override
-  public final boolean equals(@Nullable Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) return true;
     if (o == null) return false;
     if (o.getClass() != this.getClass()) return false;

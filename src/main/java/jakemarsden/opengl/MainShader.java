@@ -11,7 +11,7 @@ import jakemarsden.opengl.engine.light.SpotLight;
 import jakemarsden.opengl.engine.math.Color3;
 import jakemarsden.opengl.engine.math.Matrix4;
 import jakemarsden.opengl.engine.math.Vector3;
-import jakemarsden.opengl.engine.model.Material;
+import jakemarsden.opengl.engine.res.material.Material;
 import jakemarsden.opengl.engine.shader.Shader;
 import jakemarsden.opengl.engine.shader.ShaderProgram;
 import jakemarsden.opengl.engine.shader.ShaderProgramLoader;
@@ -187,11 +187,11 @@ final class MainShader implements Shader {
 
   @Override
   public void setMaterial(@NonNull Material mat) {
-    this.prog.setUniformTexture(UNIFORM_MATERIAL_AMBIENT, mat.ambientMapTexUnit);
-    this.prog.setUniformTexture(UNIFORM_MATERIAL_DIFFUSE, mat.diffuseMapTexUnit);
-    this.prog.setUniformTexture(UNIFORM_MATERIAL_SPECULAR, mat.specularMapTexUnit);
-    this.prog.setUniformTexture(UNIFORM_MATERIAL_EMISSION, mat.emissionMapTexUnit);
-    this.prog.setUniformFloat(UNIFORM_MATERIAL_SHININESS, mat.shininess);
+    this.prog.setUniformTexture(UNIFORM_MATERIAL_AMBIENT, mat.getAmbientTexUnit());
+    this.prog.setUniformTexture(UNIFORM_MATERIAL_DIFFUSE, mat.getDiffuseTexUnit());
+    this.prog.setUniformTexture(UNIFORM_MATERIAL_SPECULAR, mat.getSpecularTexUnit());
+    this.prog.setUniformTexture(UNIFORM_MATERIAL_EMISSION, mat.getEmissionTexUnit());
+    this.prog.setUniformFloat(UNIFORM_MATERIAL_SHININESS, mat.getShininess());
   }
 
   @Override

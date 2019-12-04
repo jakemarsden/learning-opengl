@@ -1,0 +1,16 @@
+name: lamp.material.yml
+
+ambient:
+  type: none
+
+diffuse:
+  type: none
+
+specular:
+  type: none
+
+emission:
+  type: color
+  color: [0.8, 0.8, 0.8, 1.0]
+
+shininess: 32

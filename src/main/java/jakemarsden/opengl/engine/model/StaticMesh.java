@@ -3,6 +3,7 @@ package jakemarsden.opengl.engine.model;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.*;
 
+import jakemarsden.opengl.engine.res.material.Material;
 import jakemarsden.opengl.engine.shader.Shader;
 import org.checkerframework.checker.nullness.qual.NonNull;
 

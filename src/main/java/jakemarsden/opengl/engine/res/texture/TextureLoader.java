@@ -2,7 +2,8 @@ package jakemarsden.opengl.engine.res.texture;
 
 import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE15;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 import jakemarsden.opengl.engine.math.Color3;
@@ -86,9 +87,9 @@ public final class TextureLoader {
   private @NonNull ImageTexture loadImageTexture(@NonNull String name, boolean useAlpha) {
     final BufferedImage img;
     try {
-      img = this.resLoader.loadImageResource(name);
+      img = this.resLoader.loadImage(name);
     } catch (IOException e) {
-      throw new RuntimeException("Unable to load texture: \"" + name + "\"", e);
+      throw new RuntimeException("Unable to load texture: " + name, e);
     }
 
     final var width = img.getWidth();
@@ -108,6 +109,23 @@ public final class TextureLoader {
     final var pixBuf = this.asRgbaPixelBuffer(color, width, height, useAlpha);
     final var texId = this.loadPixels(pixBuf, width, height, format);
     return new ColorTexture(texId, format, width, height, color, this);
+  }
+
+  public @NonNull Texture loadFromDescription(@NonNull TextureDescription desc) {
+    if (desc instanceof TextureDescription.Image) {
+      final var imageDesc = (TextureDescription.Image) desc;
+      return this.loadImage(imageDesc.name, imageDesc.useAlpha);
+    }
+    if (desc instanceof TextureDescription.Color) {
+      final var colorDesc = (TextureDescription.Color) desc;
+      return this.loadColor(colorDesc.color);
+    }
+    if (desc instanceof TextureDescription.Empty) {
+      return EmptyTexture.get();
+    }
+
+    throw new IllegalArgumentException(
+        "Unsupported texture type: " + desc.getClass().getTypeName());
   }
 
   private void unloadTexture(@NonNull Texture tex) {

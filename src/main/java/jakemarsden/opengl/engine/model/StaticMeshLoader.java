@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
+import jakemarsden.opengl.engine.res.material.Material;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public final class StaticMeshLoader {

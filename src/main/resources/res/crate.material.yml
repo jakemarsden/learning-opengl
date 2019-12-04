@@ -1,0 +1,18 @@
+name: crate.material.yml
+
+ambient:
+  type: image
+  name: crate.texture.png
+
+diffuse:
+  type: image
+  name: crate.texture.png
+
+specular:
+  type: image
+  name: crate.texture.specular.png
+
+emission:
+  type: none
+
+shininess: 32
